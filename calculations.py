@@ -4,9 +4,15 @@ import pandas as pd
 import warnings
 import os
 warnings.filterwarnings("ignore")
+from flow_functions import dp_table
+from other_functions import *
 
 
 def calculate_division(steps: int, length: int) -> float:
+    
+    import flow_functions
+    print(dir(flow_functions))
+
     pure_CO2 = False                     # @param {type:"boolean"}
 
     case = 'case1'
@@ -25,7 +31,7 @@ def calculate_division(steps: int, length: int) -> float:
 
     p1 =50*1e5                            #@param p1 (float) = 40*1e5       # p, Pa
     T1 = 273.15+50                        #@param T1 (float) = 273.15+60    # T, K
-    L = 40*1000                           #@param L (float) = 40*1000       # pipe length, m
+    L = length                           #@param L (float) = 40*1000       # pipe length, m
     e = 0.0457 / 1000                     #@param e (float) = 0.0457 / 1000 # pipe roughness, m
     D = 0.315925                          #@param D (float) = 0.325   # m
 
@@ -37,7 +43,7 @@ def calculate_division(steps: int, length: int) -> float:
     A = 0.25*np.pi*D**2
     qm = 650                             # @param qm (float) = 700   # ktpa
     qm = qm * 1e6 / (365*24*3600)        # mass flow rate (kg/s) of CO2 stream = 700 kt/y = 22.19685438863521 kg/s
-    nsteps = 40                         # @param nsteps (int) = 25  # number of steps
+    nsteps = steps                         # @param nsteps (int) = 25  # number of steps
     boosters = False                     # @param {type:"boolean"}
 
 
@@ -46,10 +52,11 @@ def calculate_division(steps: int, length: int) -> float:
 
     d_in = np.array([241.1])/1000             # m
     wthick = np.array([16, 16 ,16, 16, 16])                             #
-    p_in = (np.array([40, 50])*1e5)                         # Pa
-    e_i = np.array([0.05, 0.025])/1000                # m
+    p_in = (np.array([40])*1e5)                         # Pa
+    e_i = np.array([0.05])/1000                # m
     T = np.array([40])+273.15                       # K
-    Q = np.array([752])*1e6/(365*24*3600)   
+    Q = np.array([750])*1e6/(365*24*3600)
+    p_last = 0.0   
 
     import datetime
     timeformat = "%H:%M:%S"
@@ -83,30 +90,14 @@ def calculate_division(steps: int, length: int) -> float:
                     d_in_sens[D] = e_sens.copy()
                 parameter_sensitivity[p1] = d_in_sens.copy()
             
-            df_summary = pd.DataFrame(columns=['p_in', 'd_in', 'e', 'p_out'])
+
             for p1 in p_in: 
                 for D in d_in:
                     for e in e_i: 
                         p2 = parameter_sensitivity[p1][D][e]['p2'].iloc[-1]
-                        print(f'p2: {p2}')
-                        new_row = {'p_in': p1/1e5, 'd_in':D, 'e': e, 'p_out': p2}
-                        df_summary = df_summary._append(new_row, ignore_index = True)
-            directory = f'case_{int(qm/(1e6 / (365*24*3600)))}/'
-            if not os.path.exists(directory):
-                os.makedirs(directory)
-            df_summary.to_csv(f'{directory}{case}_summary_nsteps_{nsteps}_t_{int(T1-273.15)}.txt')
-            print (f'saved to: {directory}{case}_summary_nsteps_{nsteps}_t_{int(T1-273.15)}.txt')
-        
-            with open(f'{directory}{case}_sensitivity_t_{int(T1-273.15)}.json', 'w') as f:
-                for p_i, d_in_dict in parameter_sensitivity.items():
-                    for din, e_sens_dict in d_in_dict.items():
-                        for ei, df in e_sens_dict.items():
-                            df_json = df.to_json(orient='split')
-                            f.write(f'{p_i},{din},{ei},{df_json}\n')
+                        p_last = p2
 
-        end_t = datetime.datetime.now()
-        runtime = end_t - start_t
-        print (f'ended at {end_t}, runtime: {runtime.total_seconds():.1f} seconds' )
+
     
 
-    return 0.0
+    return p_last
