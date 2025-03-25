@@ -12,7 +12,7 @@ class InputModel(BaseModel):
 
 @app.get("/calculateBlank")
 def calculate():
-    result = calculate_division(40000, 40)
+    result = calculate_division(40, 40000)
     return result
 
 # API route that accepts two integers and returns a float
