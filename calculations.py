@@ -1,17 +1,15 @@
-from numpy.ma.core import log10
 import numpy as np
 import pandas as pd
 import warnings
 import os
-warnings.filterwarnings("ignore")
+import datetime
 from flow_functions import dp_table
 from other_functions import *
+from numpy.ma.core import log10
+warnings.filterwarnings("ignore")
 
-
-def calculate_division(steps: int, length: int) -> float:
+def calculate_division(steps: int, length: int, d_in: float, roughness: float, p: float, T: float, qm: float) -> float:
     
-    import flow_functions
-    print(dir(flow_functions))
 
     pure_CO2 = False                     # @param {type:"boolean"}
 
@@ -56,9 +54,9 @@ def calculate_division(steps: int, length: int) -> float:
     e_i = np.array([0.05])/1000                # m
     T = np.array([40])+273.15                       # K
     Q = np.array([750])*1e6/(365*24*3600)
-    p_last = 0.0   
+    p_last = 0.0   #moja varijabla
 
-    import datetime
+
     timeformat = "%H:%M:%S"
     start_t = datetime.datetime.now()
     parameter_sensitivity = {}
@@ -69,21 +67,18 @@ def calculate_division(steps: int, length: int) -> float:
             print (f'T = {T1-273.15}°C')
             for p1 in p_in:
                 d_in_sens = {}
-                now = datetime.datetime.now()
                 print (f'+- p_in = {p1} Pa')
                 for D in d_in:
-                    now = datetime.datetime.now()
-                    print (f'   +--- {now.strftime(timeformat)}:  d_in = {D} m')
+                    print (f'd_in = {D} m')
                     dfi = pd.DataFrame(columns=['L', 'p1', 't', 'mu', 'rho_g', 'u', 'Re', 'ff', 'dp', 'p2'])
                     e_sens = {}
                     for e in e_i:
-                        p_1 = p1
-                        now = datetime.datetime.now()
-                        print (f'         +--- {now.strftime(timeformat)}:  roughness = {e} m')
+                        print (f'+ begin --- {datetime.datetime.now().strftime(timeformat)}: roughness = {e} m')
                         dfi = dp_table(lookup_table = df_lookup, 
                                     L = L, A = A, d_in = D, 
                                     e = e, p1 = p1, T1=T1, 
                                     qm = qm, nsteps = nsteps)
+                        print (f'+ end --- {datetime.datetime.now().strftime(timeformat)}: roughness = {e} m')
                         dfi['rho_g'] = dfi['rho_g'].astype(float)         # format for plotting
                         dfi['mu'] = dfi['mu'].astype(float)               # format for plotting
                         e_sens[e] = dfi.copy()
@@ -97,7 +92,5 @@ def calculate_division(steps: int, length: int) -> float:
                         p2 = parameter_sensitivity[p1][D][e]['p2'].iloc[-1]
                         p_last = p2
 
-
-    
-
+    print(f"================================ pad tlaka: {p_last}")
     return p_last
