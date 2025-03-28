@@ -1,20 +1,32 @@
 import requests
+import datetime
 
-# Define the URL of the FastAPI endpoint
 url = "http://127.0.0.1:8000/calculate"
+#url = "https://test-production-f873.up.railway.app/calculate"
 
-# Create a dictionary for the input data
+
+#namjesteni parametri da se covjek ne muci sa POST-o ako ne mora (40,40000) kao dole
+# url = "https://test-production-f873.up.railway.app/calculateBlank"
+
+begin = datetime.datetime.now()
+
 input_data = {
-    "nsteps": 40,
-    "length": 40000 # example values for nsteps and length
+    "nsteps": 2,
+    "L": 40000, 
+    "d_in": 0.315925,
+    "e": 0.0001,
+    "p": 4000000,
+    "T": 293.15,
+    "qm": 23.75,
+    "case": "case1"   
 }
 
-# Send a POST request to the FastAPI server
 response = requests.post(url, json=input_data)
 
-# Check if the request was successful
 if response.status_code == 200:
     result = response.json()
-    print(f"Calculation result: {result}")
+    end = datetime.datetime.now()
+    runtime = end - begin
+    print(f"p2: {result}  in {runtime} seconds")
 else:
-    print(f"Error: {response.status_code}, {response.text}")
+    print(f"Greska: {response.status_code}, {response.text}")
