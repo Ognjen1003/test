@@ -1,30 +1,21 @@
-from fastapi import FastAPI
-from datetime import datetime
-from pydantic import BaseModel
-from calculations import calculate_division
+from fastapi import FastAPI, HTTPException
+from calculations import calculate_steps
+from Classes.models import InputModel
+
+#import sys
+#import os
+#sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 
 app = FastAPI()
 
-class InputModel(BaseModel):
-    nsteps: int
-    length: int
-
-
-@app.get("/calculateBlank")
-def calculate():
-    result = calculate_division(40, 40000)
-    return result
-
 @app.post("/calculate", response_model=float)
-async def calculate(input_data: InputModel):
-    result = calculate_division(input_data.nsteps, input_data.length)
-    return result
-
-@app.get("/time")
-def get_current_time():
-    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    return {"Ovo je FastAPI prvi service point - vrijeme": current_time}
-
-@app.get("/hello/{name}")
-def say_hello(name: str):
-    return {"message": f"Hello, {name}!"}
+async def calculate(input_data: InputModel = None):
+    try:
+        if input_data is None:
+            input_data = InputModel()
+        result = calculate_steps(input_data.nsteps, input_data.L, input_data.d_in, 
+                                input_data.e, input_data.p, input_data.T, input_data.qm, input_data.case)
+        return result
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    
