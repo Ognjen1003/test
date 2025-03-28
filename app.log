@@ -1,0 +1,12 @@
+2025-03-28 16:43:59.649 | INFO     | Classes.LoggerSingleton:log_info:26 - Received input data from 127.0.0.1: nsteps=2 L=40000 d_in=0.315925 e=0.0001 p=4000000.0 T=293.15 qm=23.75 case='case1'
+2025-03-28 16:44:00.380 | INFO     | Classes.LoggerSingleton:log_info:26 - Exception: Received input data from 127.0.0.1: nsteps=2 L=40000 d_in=0.315925 e=0.0001 p=4000000.0 T=293.15 qm=23.75 case='case1', error: single positional indexer is out-of-bounds
+2025-03-28 16:50:35.383 | INFO     | Classes.LoggerSingleton:log_info:26 - Received input data from 127.0.0.1: nsteps=2 L=40000 d_in=0.315925 e=0.0001 p=4000000.0 T=293.15 qm=23.75 case='case1'
+2025-03-28 16:50:54.959 | INFO     | Classes.LoggerSingleton:log_info:26 - Received input data from 127.0.0.1: nsteps=2 L=40000 d_in=0.315925 e=0.0001 p=4000000.0 T=293.15 qm=23.75 case='CO2'
+2025-03-28 16:50:54.962 | INFO     | Classes.LoggerSingleton:log_info:26 - Exception: Received input data from 127.0.0.1: nsteps=2 L=40000 d_in=0.315925 e=0.0001 p=4000000.0 T=293.15 qm=23.75 case='CO2', error: cannot access local variable 'df_lookup' where it is not associated with a value
+2025-03-28 16:51:35.914 | INFO     | Classes.LoggerSingleton:log_info:26 - Received input data from 127.0.0.1: nsteps=2 L=40000 d_in=0.315925 e=0.0001 p=4000000.0 T=293.15 qm=23.75 case='case1'
+2025-03-28 17:07:25.759 | INFO     | Classes.LoggerSingleton:log_info:26 - Received input data from 127.0.0.1: nsteps=2 L=40000 d_in=0.315925 e=0.0001 p=4000000.0 T=293.15 qm=23.75 case='case1'
+2025-03-28 17:07:46.072 | INFO     | Classes.LoggerSingleton:log_info:26 - Received input data from 127.0.0.1: nsteps=2 L=40000 d_in=0.315925 e=0.0001 p=4000000.0 T=293.15 qm=23.75 case='cO2'
+2025-03-28 17:14:21.808 | INFO     | Classes.LoggerSingleton:log_info:26 - Received input data from 127.0.0.1: nsteps=2 L=40000 d_in=0.315925 e=0.0001 p=4000000.0 T=293.15 qm=23.75 case='case4'
+2025-03-28 17:14:21.809 | INFO     | Classes.LoggerSingleton:log_info:26 - ValueError: Received input data from 127.0.0.1: nsteps=2 L=40000 d_in=0.315925 e=0.0001 p=4000000.0 T=293.15 qm=23.75 case='case4', error: Invalid case: case4. Must be one of ['case1', 'case2', 'case3', 'CO2']
+2025-03-28 17:16:07.347 | ERROR    | Classes.LoggerSingleton:log_error:41 - Route error - IP: 127.0.0.1
+2025-03-28 17:16:07.348 | ERROR    | Classes.LoggerSingleton:log_error:41 - Uncaught error: Route error! - IP: 127.0.0.1

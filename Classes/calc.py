@@ -76,6 +76,39 @@ class Calc:
         dp = f * (L / D) * rho_g * (v ** 2) / 2
         return dp
 
+
+    def dp_table_combined(self, L, A, d_in, e, p1, T1, qm, is_pure_CO2, nsteps=10, lookup_table=None):
+        df_dp = pd.DataFrame(columns=['L', 'p1', 't', 'mu', 'rho_g', 'u', 'Re', 'ff', 'dp', 'p2'])
+        
+        if not is_pure_CO2:
+            points = lookup_table[['p', 't']].values
+
+        for i in range(nsteps):
+            if is_pure_CO2:
+                # Pure CO2 logic (from dp_table_pure)
+                rho_gas = CP.PropsSI('D', 'T', T1, 'P', p1, 'CO2')
+                mu = CP.PropsSI('V', 'T', T1, 'P', p1, 'CO2')
+            else:
+                # Standard lookup table logic (from dp_table)
+                rho_gas = griddata(points, lookup_table['rho_g'].values, (p1 / 1e5, T1 - 273.15), method='linear')
+                mu = griddata(points, lookup_table['mu_g'].values, (p1 / 1e5, T1 - 273.15), method='linear')
+
+            # Common logic for both cases
+            qv = qm / rho_gas
+            u = qv / A
+            Re = self.Reynolds(rho_gas, u, d_in, mu)
+            ff = self.f_Colebrook_White(d_in, Re, e)
+            dP = self.p_Darcy_Weisbach(v=u, rho_g=rho_gas, L=L / nsteps, f=ff, D=d_in)
+            p2 = p1 - dP
+
+            df_dp.loc[i] = [(i + 1) * (L / nsteps), p1 / 1e5, T1 - 273.15, mu, rho_gas, u, Re, ff, dP / 1e5, p2 / 1e5]
+            p1 = p2
+
+        return df_dp
+
+
+
+
     @jit(forceobj=True)
     def dp_table(self, lookup_table, L, A, d_in, e, p1, T1, qm, nsteps=10):
         points = lookup_table[['p', 't']].values
