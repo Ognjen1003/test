@@ -73,6 +73,7 @@ async def root():
                 "T": 293.15,           # Temperature (K)
                 "qm": 23.75,           # Mass flow rate (kg/m^3)
                 "case": "case1"        # Case name (case1, case2, case3, CO2)
+                "visual": 0            # 0 or 1
             }
             </pre>
 
@@ -89,10 +90,11 @@ async def root():
                 "T": 293.15,
                 "qm": 23.75,
                 "case": "case1"
+                "visual": 0
             }
             </pre>
 
-            <p>The response will return the result of the calculation as a float.</p>
+            <p>The response will return the result of the calculation as a JSON or HTML table ("visual": 1).</p>
         </body>
     </html>
     """

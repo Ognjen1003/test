@@ -36,11 +36,6 @@ def calculate_steps(steps: int, length: int, d_in: float, e: float, p: float, tK
 
     dfi = pd.DataFrame(columns=['L', 'p1', 't', 'mu', 'rho_g', 'u', 'Re', 'ff', 'dp', 'p2'])
     TIMEFORMAT = "%H:%M:%S"
-    p_out = 0.0                         #moja varijabla
-    
-    parameter_sensitivity = {}
-    d_in_sens = {}
-    e_sens = {}      
 
     calc_instance = Calc()
 

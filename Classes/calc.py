@@ -103,7 +103,7 @@ class Calc:
             dP = self.p_Darcy_Weisbach(v=u, rho_g=rho_gas, L=L / nsteps, f=ff, D=d_in)
             p2 = p1 - dP
 
-            df_dp.loc[i] = [(i + 1) * (L / nsteps), p1 / 1e5, T1 - 273.15, mu, rho_gas, u, Re, ff, dP / 1e5, p2 / 1e5]
+            df_dp.loc[i] = [(i+ 1), (i + 1) * (L / nsteps), p1 / 1e5, T1 - 273.15, mu, rho_gas, u, Re, ff, dP / 1e5, p2 / 1e5]
             p1 = p2
 
         return df_dp
