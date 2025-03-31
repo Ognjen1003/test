@@ -12,7 +12,6 @@ import pandas as pd
 LoggerSingleton()
 
 app = FastAPI()
-templates = Jinja2Templates(directory="templates")
 
 @app.post("/calculate", response_model=dict)
 async def calculate(input_data: InputModel = None, request: Request = None):
