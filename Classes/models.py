@@ -10,3 +10,4 @@ class InputModel(BaseModel):
     T: Optional[float] = 293.15
     qm: Optional[float] = 23.75
     case: Optional[str] = "case1"
+    visual: Optional[int] = 0
