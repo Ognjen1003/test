@@ -4,6 +4,7 @@ from calculations import calculate_steps
 from Classes.models import InputModel
 from Classes.LoggerSingleton import LoggerSingleton
 from fastapi.responses import JSONResponse
+import pandas as pd
 
 #import sys
 #import os
@@ -12,7 +13,7 @@ LoggerSingleton()
 
 app = FastAPI()
 
-@app.post("/calculate", response_model=float)
+@app.post("/calculate", response_model=dict)
 async def calculate(input_data: InputModel = None, request: Request = None):
     
     LoggerSingleton().log_info(f"Received input data from {request.client.host}: {input_data}")
@@ -22,7 +23,11 @@ async def calculate(input_data: InputModel = None, request: Request = None):
             input_data = InputModel()
         result = calculate_steps(input_data.nsteps, input_data.L, input_data.d_in, 
                                 input_data.e, input_data.p, input_data.T, input_data.qm, input_data.case)
-        return result
+        if input_data.visual == 0:
+            return JSONResponse(content={"result": result})
+        else: 
+            df = pd.DataFrame(result)
+            return HTMLResponse(content=df.to_html(index=False))
     except ValueError as e:
         LoggerSingleton().log_info(f"ValueError: Received input data from {request.client.host}: {input_data}, error: {e}")
         raise HTTPException(status_code=400, detail=str(e))
@@ -68,6 +73,7 @@ async def root():
                 "T": 293.15,           # Temperature (K)
                 "qm": 23.75,           # Mass flow rate (kg/m^3)
                 "case": "case1"        # Case name (case1, case2, case3, CO2)
+                "visual": 0            # 0 or 1
             }
             </pre>
 
@@ -84,10 +90,11 @@ async def root():
                 "T": 293.15,
                 "qm": 23.75,
                 "case": "case1"
+                "visual": 0
             }
             </pre>
 
-            <p>The response will return the result of the calculation as a float.</p>
+            <p>The response will return the result of the calculation as a JSON or HTML table ("visual": 1).</p>
         </body>
     </html>
     """
