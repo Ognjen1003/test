@@ -79,7 +79,7 @@ class Calc:
 
     def dp_table_combined(self, L, d_in, e, p1, T1, qm, is_pure_CO2, nsteps=10, lookup_table=None):
         
-        df_dp = pd.DataFrame(columns=['L', 'p1', 't', 'mu', 'rho_g', 'u', 'Re', 'ff', 'dp', 'p2'])
+        df_dp = pd.DataFrame(columns=['step', 'L', 'p1', 't', 'mu', 'rho_g', 'u', 'Re', 'ff', 'dp', 'p2'])
         A = 0.25*np.pi*d_in**2
 
         if not is_pure_CO2:

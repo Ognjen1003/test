@@ -1,14 +1,17 @@
-import numpy as np
-import math
 import pandas as pd
 import warnings
 import datetime
-from numpy.ma.core import log10
 from Classes.calc import Calc 
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+from Classes.LookupTableSingleton import LookupTableSingleton 
+from numpy.ma.core import log10
 from fastapi.responses import JSONResponse
 warnings.filterwarnings("ignore")
 
 def calculate_steps(steps: int, length: int, d_in: float, e: float, p: float, tK: float, qm: float, case: str) -> dict:
+
 
     ################################### case handling #################################
     check_case(case)
@@ -18,23 +21,10 @@ def calculate_steps(steps: int, length: int, d_in: float, e: float, p: float, tK
         is_pure_CO2 = True
     else:
         #TODO: DB
-        url = f"https://raw.githubusercontent.com/dvulin/lookup/main/lookup_table_{case}.csv"
-        """
-        load data from lookup table:
-        t (°C), p (bar), FL (liquid fraction), Fv (vapour fraction), rho_L (kg/m3), rho_g (kg/m3),
-        mu_L (mPas), mu_g (mPas), Z_oil (compressibility factor), Z_gas (compressibility factor)
-        """
-        try:
-            df_lookup = pd.read_csv(url)
-            df_lookup['mu_L']=df_lookup['mu_L']*0.001
-            df_lookup['mu_g']=df_lookup['mu_g']*0.001
-            print (f'loaded case: {case}')
-        except Exception as e:
-            print(f"Error loading lookup table: {e}")
-            raise e
+        df_lookup = LookupTableSingleton.load_lookup_table("case1")
     ###################################################################################        
 
-    dfi = pd.DataFrame(columns=['L', 'p1', 't', 'mu', 'rho_g', 'u', 'Re', 'ff', 'dp', 'p2'])
+    dfi = pd.DataFrame(columns=['step', 'L', 'p1', 't', 'mu', 'rho_g', 'u', 'Re', 'ff', 'dp', 'p2'])
     TIMEFORMAT = "%H:%M:%S"
 
     calc_instance = Calc()
