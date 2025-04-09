@@ -1,17 +1,16 @@
 import pandas as pd
 import warnings
 import datetime
-from Classes.calc import Calc 
+from Classes.Flow.Flow import Flow 
+from Classes.Flow.LookupTableSingleton import LookupTableSingleton 
 import sys
 import os
-sys.path.append(os.path.abspath(os.path.dirname(__file__)))
-from Classes.LookupTableSingleton import LookupTableSingleton 
-from numpy.ma.core import log10
-from fastapi.responses import JSONResponse
+
 warnings.filterwarnings("ignore")
+sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+
 
 def calculate_steps(steps: int, length: int, d_in: float, e: float, p: float, tK: float, qm: float, case: str) -> dict:
-
 
     ################################### case handling #################################
     check_case(case)
@@ -27,7 +26,7 @@ def calculate_steps(steps: int, length: int, d_in: float, e: float, p: float, tK
     dfi = pd.DataFrame(columns=['step', 'L', 'p1', 't', 'mu', 'rho_g', 'u', 'Re', 'ff', 'dp', 'p2'])
     TIMEFORMAT = "%H:%M:%S"
 
-    calc_instance = Calc()
+    flow_instance = Flow()
 
 
     print(f' {p} Pa, {d_in} diameter(m), {steps} steps, {length} length(m), {tK} K, {qm} kg/m3, {e} pipe roughness')
@@ -37,7 +36,7 @@ def calculate_steps(steps: int, length: int, d_in: float, e: float, p: float, tK
 
     dfi = pd.DataFrame(columns=['L', 'p1', 't', 'mu', 'rho_g', 'u', 'Re', 'ff', 'dp', 'p2'])
 
-    dfi = calc_instance.dp_table_combined(L = length, d_in = d_in, 
+    dfi = flow_instance.dp_table_combined(L = length, d_in = d_in, 
                     e = e, p1 = p, T1 = tK, qm = qm, is_pure_CO2 = is_pure_CO2, nsteps = steps, lookup_table = df_lookup)
 
                         
