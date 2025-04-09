@@ -12,7 +12,7 @@ class LoggerSingleton:
 
     @staticmethod
     def _configure_logger():
-        logger.add("app.log", rotation="1 MB", retention="30 days", level="INFO")
+        logger.add("Logs/app.log", rotation="1 MB", retention="30 days", level="INFO")
         print('Logger configured level: app.log, INFO, retention 30 days.')
 
 

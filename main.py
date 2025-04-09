@@ -1,10 +1,12 @@
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import HTMLResponse
-from calculations import calculate_steps
-from Classes.models import InputModel
+from fastapi.responses import JSONResponse, HTMLResponse
+from Endpoints.FlowModul import calculate_steps
+from Endpoints.EOSModul import perform_eos_calculation
+from Models.FlowModels import FlowInputModel
+from Models.EOSModels import EOSInputModel
 from Classes.LoggerSingleton import LoggerSingleton
-from fastapi.responses import JSONResponse
 import pandas as pd
+from Classes.Component import Component
 
 #import sys
 #import os
@@ -13,14 +15,23 @@ LoggerSingleton()
 
 app = FastAPI()
 
-@app.post("/calculate", response_model=dict)
-async def calculate(input_data: InputModel = None, request: Request = None):
+
+
+###############################################################
+#
+#     Endpoints
+#
+###############################################################
+
+#Flowmodel
+@app.post("/calculate_flow", response_model=dict)
+async def calculate(input_data: FlowInputModel = None, request: Request = None):
     
-    LoggerSingleton().log_info(f"Received input data from {request.client.host}: {input_data}")
+    LoggerSingleton().log_info(f"calculate_flow: Received input data from {request.client.host}: {input_data}")
 
     try:
         if input_data is None:
-            input_data = InputModel()
+            input_data = FlowInputModel()
         result = calculate_steps(input_data.nsteps, input_data.L, input_data.d_in, 
                                 input_data.e, input_data.p, input_data.T, input_data.qm, input_data.case)
         if input_data.visual == 0:
@@ -34,7 +45,54 @@ async def calculate(input_data: InputModel = None, request: Request = None):
     except Exception as e:
         LoggerSingleton().log_info(f"Exception: Received input data from {request.client.host}: {input_data}, error: {e}")
         raise HTTPException(status_code=400, detail=str("Exception: " + e.__str__()))
+
+
+#EOS calc
+@app.post("/eos_calc")
+async def calculate_EOS(input_data: EOSInputModel, request: Request = None):
     
+    LoggerSingleton().log_info(f"eos_calc: Received input data from {request.client.host}: {input_data}")
+    components = [Component(**comp.model_dump()) for comp in input_data.components]
+    try:
+        components = [
+            Component(
+                name=comp.name,
+                Tc=comp.Tc,
+                Pc=comp.Pc,
+                omega=comp.omega,
+                A=comp.A,
+                B=comp.B,
+                C=comp.C
+            )
+            for comp in input_data.components
+        ]
+
+        result = perform_eos_calculation(
+            components=components,
+            T=input_data.T,
+            P=input_data.P,
+            z=input_data.z,
+            eos_type=input_data.eos_type
+        )
+
+        return result
+
+    except ValueError as e:
+        LoggerSingleton().log_info(f"ValueError: Received input data from {request.client.host}: error: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        LoggerSingleton().log_info(f"Exception: Received input data from {request.client.host}: error: {e}")
+        raise HTTPException(status_code=400, detail=str("Exception: " + e.__str__()))
+
+
+
+###############################################################
+#
+#     Maintenance and exception handling
+#
+###############################################################
+
+
 @app.middleware("http")
 async def log_errors_middleware(request: Request, call_next):
     try:
@@ -59,9 +117,9 @@ async def root():
     return """
     <html>
         <body>
-            <h2>Welcome to the calculation service!</h2>
+            <h2>Flow calculation</h2>
 
-            <p>To use this service, send a POST request to /calculate with the following JSON data:</p>
+            <p>To use this service, send a POST request to /calculate_flow with the following JSON data:</p>
 
             <pre>
             {
@@ -95,6 +153,72 @@ async def root():
             </pre>
 
             <p>The response will return the result of the calculation as a JSON or HTML table ("visual": 1).</p>
+            
+            <pre>
+                {"result":
+                        [
+                            {
+                                "step":1,
+                                "L":40000.0,
+                                "p1":40.0,
+                                "t":20.0,
+                                "mu":1.66573821741095e-05,
+                                "rho_g":92.8530388477516,
+                                "u":3.2629440171282442,
+                                "Re":5746229.778777943,
+                                "ff":0.015240188214917173,
+                                "dp":9.537876591534586,
+                                "p2":30.462123408465413
+                            }
+                        ]
+                }
+            </pre>
+
+            <h3>EOS Calculation</h3>
+
+            <p>To perform an EOS calculation, send a POST request to /eos_calc with the following JSON data:</p>
+
+            <pre>
+            {
+                "components": [
+                    {"name": "Methane", "Tc": 190.6, "Pc": 4599000, "omega": 0.011, "A": 8.07131, "B": 1730.63, "C": 233.426},
+                    {"name": "Ethane", "Tc": 305.4, "Pc": 4872000, "omega": 0.099, "A": 8.21201, "B": 1652.57, "C": 229.387}
+                ], 
+                "T": 300,           # Temperature (K)
+                "P": 5e6,           # Pressure (Pa)
+                "z": [0.5, 0.5],    # Mole fraction in mixture
+                "eos_type": "PG"  # Type of EOS (PG or SRK)
+            }
+            </pre>
+
+            <p><strong>Example:</strong></p>
+
+            <pre>
+            POST /eos_calc
+            {
+                "components": [
+                    {"name": "Methane", "Tc": 190.6, "Pc": 4599000, "omega": 0.011, "A": 8.07131, "B": 1730.63, "C": 233.426},
+                    {"name": "Ethane", "Tc": 305.4, "Pc": 4872000, "omega": 0.099, "A": 8.21201, "B": 1652.57, "C": 229.387}
+                ],
+                "T": 300,
+                "P": 5e6,
+                "z": [0.5, 0.5],
+                "eos_type": "PG"
+            }
+            </pre>
+
+            <p>The response will return the EOS calculation results as a JSON object with the following structure:</p>
+
+            <pre>
+                {
+                    'V': 0.5, 
+                    'x': [0.5000000197840379, 0.5000001082842513], 
+                    'y': [0.4999999802159621, 0.4999998917157487], 
+                    'eos_type': 'SRK'
+                }
+            </pre>
+
+            <p>The result includes the volume, mole fractions in liquid and vapor phases, and a timestamp.</p>
         </body>
     </html>
     """
