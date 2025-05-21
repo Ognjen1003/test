@@ -60,9 +60,13 @@ async def calculate_EOS(input_data: EOSInputModel, request: Request = None):
                 Tc=comp.Tc,
                 Pc=comp.Pc,
                 omega=comp.omega,
-                A=comp.A,
-                B=comp.B,
-                C=comp.C
+                AntoineA=comp.AntoineA,
+                AntoineB=comp.AntoineB,
+                AntoineC=comp.AntoineC,
+                CpA=comp.CpA,
+                CpB=comp.CpB,
+                CpC=comp.CpC,
+                CpD=comp.CpD
             )
             for comp in input_data.components
         ]

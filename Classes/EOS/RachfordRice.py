@@ -1,38 +1,89 @@
+from typing import List, Tuple
+from scipy.optimize import root_scalar, fsolve
 from Classes.Component import Component
 from Classes.EOS.EOSUtil import Calculations
-from typing import List, Tuple
 
 class RachfordRice:
-    """
-    Iterativna RR metoda s ažuriranjem K iz fugaciteta.
-    """
+
     @staticmethod
-    def solve(z: List[float], eos_class, components: List[Component], T: float, P: float, max_iter: int = 100, tol: float = 1e-6) -> Tuple[float, List[float], List[float]]:
+    def solve(z: List[float], eos_class, components: List[Component], T: float, P: float,
+              method: str = "root_scalar", max_iter: int = 100, tol: float = 1e-6):
+
         K = [Calculations.wilson_K(comp, T, P) for comp in components]
+        print(f"[DEBUG] Inicijalni K: {K}")
+
+        if all(Ki < 1.0 for Ki in K):
+            print("[DEBUG] Svi K < 1 → tekuća faza")
+            return 0.0, z, [K[i] * z[i] for i in range(len(z))], method, 0
+        if all(Ki > 1.0 for Ki in K):
+            print("[DEBUG] Svi K > 1 → parna faza")
+            return 1.0, [z[i] / K[i] for i in range(len(z))], z, method, 0
+
+        last_valid_solution = None
 
         for iteration in range(max_iter):
-            V_low, V_high = 0.0, 1.0
-            for _ in range(100):  # Bisection
-                V = (V_low + V_high) / 2
-                f_V = sum(z[i] * (K[i] - 1) / (1 + V * (K[i] - 1)) for i in range(len(z)))
-                if abs(f_V) < tol:
-                    break
-                if f_V > 0:
-                    V_low = V
+            print(f"[DEBUG] Iteracija {iteration + 1}")
+            V = None
+
+            K_min, K_max = min(K), max(K)
+            V_min = max(0.0, 1.0 / (1.0 - K_max))
+            V_max = min(1.0, 1.0 / (1.0 - K_min))
+            print(f"  V_min = {V_min:.6f}, V_max = {V_max:.6f}")
+
+            f_min = RachfordRice.rachford_rice_function(V_min, z, K)
+            f_max = RachfordRice.rachford_rice_function(V_max, z, K)
+            print(f"  f(V_min) = {f_min:.6f}, f(V_max) = {f_max:.6f}")
+
+            if V_min > V_max or f_min * f_max > 0:
+                print("[DEBUG] Nema valjanog presjeka → fallback")
+                return last_valid_solution if last_valid_solution else (0.0, z, [K[i] * z[i] for i in range(len(z))], method, iteration + 1)
+
+            if method == "root_scalar":
+                result = root_scalar(RachfordRice.rachford_rice_function, args=(z, K),
+                                         method='bisect', bracket=[V_min, V_max], xtol=tol)
+                if result.converged:
+                    V = result.root
+                    print(f"  V (root_scalar) = {V:.6f}")
                 else:
-                    V_high = V
+                    print("[DEBUG] root_scalar nije konvergirao → fallback")
+                    return last_valid_solution if last_valid_solution else (0.0, z, [K[i] * z[i] for i in range(len(z))], method, iteration + 1)
+               
+            elif method == "fsolve":
+                V = fsolve(lambda V: RachfordRice.rachford_rice_function(V, z, K), 0.5)[0]
+                print(f"  V (fsolve) = {V:.6f}")
+                if not (0.0 <= V <= 1.0):
+                    print("[DEBUG] fsolve dao nerealno V → fallback")
+                    return last_valid_solution if last_valid_solution else (0.0, z, [K[i] * z[i] for i in range(len(z))], method, iteration + 1)
+            else:
+                raise ValueError(f"Nepoznata metoda: {method}")
 
             x = [z[i] / (1 + V * (K[i] - 1)) for i in range(len(z))]
             y = [K[i] * x[i] for i in range(len(z))]
+
             eos_vap = eos_class(components, T, P)
             eos_liq = eos_class(components, T, P)
             phi_v = eos_vap.fugacity_coeff(y, 'vapor')
             phi_l = eos_liq.fugacity_coeff(x, 'liquid')
-
             new_K = [phi_l[i] / phi_v[i] for i in range(len(z))]
+            print(f"  Novi K: {new_K}")
 
+            last_valid_solution = (V, x, y, method, iteration + 1)
+
+            if V < 1e-3:
+                print("[DEBUG] V vrlo mali → tekuća faza")
+                return 0.0, z, [K[i] * z[i] for i in range(len(z))], method, iteration + 1
+            if all(abs(Ki - 1.0) < 1e-3 for Ki in new_K):
+                print("[DEBUG] Svi K ≈ 1 → ravnoteža")
+                return 0.5, z, z, method, iteration + 1
             if all(abs((new_K[i] - K[i]) / K[i]) < tol for i in range(len(K))):
-                break
+                print("[DEBUG] K konvergirao")
+                return V, x, y, method, iteration + 1
+
             K = new_K
 
-        return V, x, y
+        print("[DEBUG] Dosegnut max_iter → vraćam zadnje poznato rješenje")
+        return last_valid_solution if last_valid_solution else (0.0, z, [K[i] * z[i] for i in range(len(z))], method, max_iter)
+
+    @staticmethod
+    def rachford_rice_function(V, z, K):
+        return sum(z[i] * (K[i] - 1) / (1 + V * (K[i] - 1)) for i in range(len(z)))

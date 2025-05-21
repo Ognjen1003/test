@@ -1,5 +1,5 @@
 import math
-from typing import List
+from typing import List, Tuple
 from Classes.Component import Component
 
 class EOSBase:
@@ -15,10 +15,36 @@ class EOSBase:
         self.P = P                   
         self.a_i = []                 
         self.b_i = []                 
-        self.calc_parameters()        
+        self.calc_parameters()      
 
+
+    def get_Z_factors(self, x: List[float], y: List[float]) -> Tuple[float, float]: 
+
+        def compute_A_B(comp_frac: List[float]) -> Tuple[float, float]:
+            a_mix = 0.0
+            b_mix = 0.0
+            N = len(comp_frac)
+
+            for i in range(N):
+                b_mix += comp_frac[i] * self.b_i[i]
+                for j in range(N):
+                    a_mix += comp_frac[i] * comp_frac[j] * math.sqrt(self.a_i[i] * self.a_i[j])
+
+            A = a_mix * self.P / (self.R**2 * self.T**2)
+            B = b_mix * self.P / (self.R * self.T)
+            return A, B
+
+        A_liq, B_liq = compute_A_B(x)
+        A_vap, B_vap = compute_A_B(y)
+
+        Z_liq = self.calc_Z_factor(A_liq, B_liq, phase='liquid')
+        Z_vap = self.calc_Z_factor(A_vap, B_vap, phase='vapor')
+
+        return Z_liq, Z_vap
+    
+    
     def alpha(self, comp: Component) -> float:
-        """
+        """ 
         Placeholder method alpha correction
         """
         raise NotImplementedError
@@ -47,6 +73,7 @@ class EOSBase:
         """
         Cubic eq. - Cardano.
         """
+
         a, b, c, d = coeffs
         f = ((3 * c / a) - (b ** 2 / a ** 2)) / 3
         g = ((2 * b ** 3 / a ** 3) - (9 * b * c / a ** 2) + (27 * d / a)) / 27

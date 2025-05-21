@@ -6,9 +6,13 @@ class ComponentInput(BaseModel):
     Tc: float
     Pc: float
     omega: float
-    A: float
-    B: float
-    C: float
+    AntoineA: float
+    AntoineB: float
+    AntoineC: float
+    CpA: float
+    CpB: float
+    CpC: float
+    CpD: float
     
 class EOSInputModel(BaseModel):
     components: List[ComponentInput]
