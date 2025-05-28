@@ -1,7 +1,21 @@
 from Endpoints.EOSModul import perform_eos_calculation
 from Classes.Component import ComponentNew
 from Classes.EOS.EOSUtil import Calculations
-import math
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.colors import ListedColormap, BoundaryNorm
+import matplotlib.patches as mpatches
+import seaborn as sns
+import sys
+from CoolProp.CoolProp import PropsSI
+
+def check_total_fraction(data, label):
+    total = sum(comp["fraction"] for comp in data["components"])
+    if abs(total - 1.0) < 1e-6:
+        print(f"{label}: OK (sum = {total:.6f})")
+    else:
+        print(f"{label}: NOT OK (sum = {total:.6f})")
 
 
 data = {
@@ -54,11 +68,67 @@ data = {
 }
 
 
+data_oxyfuel_comp1 = {
+    "components": [
+        {"name": "CO2", "formula": "CO2", "Mw": 44.01, "Tc": 304.7, "Pc": 73.866, "omega": 0.225, "fraction": 0.85, "CpA": 22.26, "CpB": 5.981e-3, "CpC": -3.501e-6, "CpD": 7469.0},
+        {"name": "O2", "formula": "O2", "Mw": 32.00, "Tc": 154.6, "Pc": 50.43, "omega": 0.0222, "fraction": 0.047, "CpA": 29.10, "CpB": 0, "CpC": 0, "CpD": 0},
+        {"name": "N2", "formula": "N2", "Mw": 28.013, "Tc": 126.2, "Pc": 33.944, "omega": 0.04, "fraction": 0.058, "CpA": 28.90, "CpB": -0.0001571, "CpC": 8.081e-7, "CpD": 0.0},
+        {"name": "Ar", "formula": "Ar", "Mw": 39.948, "Tc": 150.8, "Pc": 48.63, "omega": -0.004, "fraction": 0.0447, "CpA": 20.85, "CpB": 0, "CpC": 0, "CpD": 0},
+        {"name": "H2O", "formula": "H2O", "Mw": 18.015, "Tc": 647.1, "Pc": 220.64, "omega": 0.344, "fraction": 0.0001, "CpA": 32.24, "CpB": 0, "CpC": 0, "CpD": 0},
+        {"name": "NO", "formula": "NO", "Mw": 30.006, "Tc": 180.0, "Pc": 64.0, "omega": 0.584, "fraction": 0.0001, "CpA": 29.10, "CpB": 0, "CpC": 0, "CpD": 0},
+        {"name": "SO2", "formula": "SO2", "Mw": 64.066, "Tc": 430.8, "Pc": 77.8, "omega": 0.251, "fraction": 0.00005, "CpA": 40.0, "CpB": 0, "CpC": 0, "CpD": 0},
+        {"name": "SO3", "formula": "SO3", "Mw": 80.063, "Tc": 490.0, "Pc": 83.0, "omega": 0.315, "fraction": 0.00005, "CpA": 50.0, "CpB": 0, "CpC": 0, "CpD": 0},
+        {"name": "CO", "formula": "CO", "Mw": 28.010, "Tc": 132.9, "Pc": 34.94, "omega": 0.045, "fraction": 0.00005, "CpA": 29.14, "CpB": 0, "CpC": 0, "CpD": 0},
+        {"name": "H2S", "formula": "H2S+COS", "Mw": 34.08, "Tc": 373.2, "Pc": 88.0, "omega": 0.1, "fraction": 0.00005, "CpA": 34.0, "CpB": 0, "CpC": 0, "CpD": 0}
+    ]
+}
+
+
+data_oxyfuel_comp2 = {
+    "components": [
+        {"name": "CO2", "formula": "CO2", "Mw": 44.01, "Tc": 304.7, "Pc": 73.866, "omega": 0.225, "fraction": 0.98, "CpA": 22.26, "CpB": 5.981e-3, "CpC": -3.501e-6, "CpD": 7469.0},
+        {"name": "O2", "formula": "O2", "Mw": 32.00, "Tc": 154.6, "Pc": 50.43, "omega": 0.0222, "fraction": 0.0067, "CpA": 29.10, "CpB": 0, "CpC": 0, "CpD": 0},
+        {"name": "N2", "formula": "N2", "Mw": 28.013, "Tc": 126.2, "Pc": 33.944, "omega": 0.04, "fraction": 0.0071, "CpA": 28.90, "CpB": -0.0001571, "CpC": 8.081e-7, "CpD": 0.0},
+        {"name": "Ar", "formula": "Ar", "Mw": 39.948, "Tc": 150.8, "Pc": 48.63, "omega": -0.004, "fraction": 0.0059, "CpA": 20.85, "CpB": 0, "CpC": 0, "CpD": 0},
+        {"name": "H2O", "formula": "H2O", "Mw": 18.015, "Tc": 647.1, "Pc": 220.64, "omega": 0.344, "fraction": 0.0001, "CpA": 32.24, "CpB": 0, "CpC": 0, "CpD": 0},
+        {"name": "NO", "formula": "NO", "Mw": 30.006, "Tc": 180.0, "Pc": 64.0, "omega": 0.584, "fraction": 0.0001, "CpA": 29.10, "CpB": 0, "CpC": 0, "CpD": 0},
+        {"name": "SO2", "formula": "SO2", "Mw": 64.066, "Tc": 430.8, "Pc": 77.8, "omega": 0.251, "fraction": 0.00005, "CpA": 40.0, "CpB": 0, "CpC": 0, "CpD": 0},
+        {"name": "SO3", "formula": "SO3", "Mw": 80.063, "Tc": 490.0, "Pc": 83.0, "omega": 0.315, "fraction": 0.00005, "CpA": 50.0, "CpB": 0, "CpC": 0, "CpD": 0},
+        {"name": "CO", "formula": "CO", "Mw": 28.010, "Tc": 132.9, "Pc": 34.94, "omega": 0.045, "fraction": 0.00005, "CpA": 29.14, "CpB": 0, "CpC": 0, "CpD": 0},
+        {"name": "H2S", "formula": "H2S+COS", "Mw": 34.08, "Tc": 373.2, "Pc": 88.0, "omega": 0.1, "fraction": 0.00005, "CpA": 34.0, "CpB": 0, "CpC": 0, "CpD": 0}
+    ]
+}
+
+
+data_oxyfuel_comp3 = {
+    "components": [
+        {"name": "CO2", "formula": "CO2", "Mw": 44.01, "Tc": 304.7, "Pc": 73.866, "omega": 0.225, "fraction": 0.9994, "CpA": 22.26, "CpB": 5.981e-3, "CpC": -3.501e-6, "CpD": 7469.0},
+        {"name": "O2", "formula": "O2", "Mw": 32.00, "Tc": 154.6, "Pc": 50.43, "omega": 0.0222, "fraction": 0.0001, "CpA": 29.10, "CpB": 0, "CpC": 0, "CpD": 0},
+        {"name": "N2", "formula": "N2", "Mw": 28.013, "Tc": 126.2, "Pc": 33.944, "omega": 0.04, "fraction": 0.0001, "CpA": 28.90, "CpB": -0.0001571, "CpC": 8.081e-7, "CpD": 0.0},
+        {"name": "Ar", "formula": "Ar", "Mw": 39.948, "Tc": 150.8, "Pc": 48.63, "omega": -0.004, "fraction": 0.0001, "CpA": 20.85, "CpB": 0, "CpC": 0, "CpD": 0},
+        {"name": "H2O", "formula": "H2O", "Mw": 18.015, "Tc": 647.1, "Pc": 220.64, "omega": 0.344, "fraction": 0.0001, "CpA": 32.24, "CpB": 0, "CpC": 0, "CpD": 0},
+        {"name": "NO", "formula": "NO", "Mw": 30.006, "Tc": 180.0, "Pc": 64.0, "omega": 0.584, "fraction": 0.0001, "CpA": 29.10, "CpB": 0, "CpC": 0, "CpD": 0},
+        {"name": "SO2", "formula": "SO2", "Mw": 64.066, "Tc": 430.8, "Pc": 77.8, "omega": 0.251, "fraction": 0.00005, "CpA": 40.0, "CpB": 0, "CpC": 0, "CpD": 0},
+        {"name": "SO3", "formula": "SO3", "Mw": 80.063, "Tc": 490.0, "Pc": 83.0, "omega": 0.315, "fraction": 0.00005, "CpA": 50.0, "CpB": 0, "CpC": 0, "CpD": 0},
+        {"name": "CO", "formula": "CO", "Mw": 28.010, "Tc": 132.9, "Pc": 34.94, "omega": 0.045, "fraction": 0.00005, "CpA": 29.14, "CpB": 0, "CpC": 0, "CpD": 0},
+        {"name": "H2S", "formula": "H2S+COS", "Mw": 34.08, "Tc": 373.2, "Pc": 88.0, "omega": 0.1, "fraction": 0.00005, "CpA": 34.0, "CpB": 0, "CpC": 0, "CpD": 0}
+    ]
+}
+
+
+check_total_fraction(data_oxyfuel_comp1, "Oxyfuel Comp 1")
+check_total_fraction(data_oxyfuel_comp2, "Oxyfuel Comp 2")
+check_total_fraction(data_oxyfuel_comp3, "Oxyfuel Comp 3")
+
+temperatures = np.arange(230, 920, 1)  
+pressures = np.arange(12, 900, 1)      
+results = pd.DataFrame(index=pressures, columns=temperatures)
+
 
 
 components = []
 
-for comp in data["components"]:
+for comp in data_oxyfuel_comp3["components"]:
     component = ComponentNew(
         name=comp["name"],
         formula=comp["formula"],
@@ -74,20 +144,108 @@ for comp in data["components"]:
     )
     components.append(component)
 
-K = [Calculations.wilson_K(comp, 288, 25) for comp in components]
-print(f"[DEBUG] Inicijalni K: {K}")
-
 
 fractions = [comp.fraction for comp in components]
-result = perform_eos_calculation(
-    components,
-    288,        
-    25,            
-    fractions,
-    "PR"
-) 
 
-print(result)
+
+""" result = perform_eos_calculation(
+            components,
+             288.15,        
+             70,            
+             fractions,
+             "PR"
+             ) 
+print(f"{result["V"]}")
+
+
+sys.exit(0) """
+
+
+for Tt in temperatures:
+    for Pp in pressures:
+        result = perform_eos_calculation(
+            components,
+            Tt,        
+            Pp,            
+            fractions,
+            "PR"
+            ) 
+        if result["V"] == -1.0:
+            results.at[Pp, Tt] = np.nan 
+        else:
+            results.at[Pp, Tt] = result["V"]
+
+
+print(results)
+results.to_csv("results3.csv")
+
+results_float = results.astype(float)
+
+
+custom_cmap = sns.color_palette("viridis", as_cmap=True)
+data_masked = results_float.mask((results_float == 0) | (results_float == 1), np.nan)
+
+
+cmap_combined = ListedColormap(["black", "white"])
+bounds = [0, 0.5, 1.5]
+norm = BoundaryNorm(bounds, cmap_combined.N)
+
+plt.figure(figsize=(14, 8))
+
+ax = sns.heatmap(
+    data_masked,
+    cmap=custom_cmap,
+    cbar=True,
+    cbar_kws={'label': '[V]'},
+    xticklabels=10,
+    yticklabels=10
+)
+
+
+sns.heatmap(
+    results_float.where((results_float == 0) | (results_float == 1)),
+    cmap=cmap_combined,
+    norm=norm,
+    cbar=False,
+    xticklabels=10,
+    yticklabels=10
+)
+
+
+plt.gcf().patch.set_facecolor('#f0f0f0')
+plt.gca().set_facecolor('#f0f0f0')
+plt.gca().invert_yaxis()
+
+
+plt.xlabel("Temperatura [K]")
+plt.ylabel("Tlak [bar]")
+plt.title("Oxyfuel Comp 2 (0 = crna (L), 1 = bijela (V))")
+
+
+black_patch = mpatches.Patch(color='black', label='1 faza')
+white_patch = mpatches.Patch(color='white', label='1 faza')
+plt.legend(handles=[black_patch, white_patch], loc='upper left', title='Jednofazna podrucja')
+
+plt.tight_layout()
+plt.show()
+
+#print(f"-------{result["V"]}")
+
+
+
+""" components = ["CO2", "O2", "N2", "Ar", "H2O", "CO", "SO2", "NO"]  # CoolProp ne zna za "SO3", "H2S+COS" kao smjesu
+for comp in components:
+    try:
+        Tc = PropsSI("TCRIT", "", 0, "", 0, comp)
+        Pc = PropsSI("PCRIT", "", 0, "", 0, comp)
+        omega = PropsSI("ACENTRIC", "", 0, "", 0, comp)
+        Mw = PropsSI("M", "", 0, "", 0, comp)
+
+        print(f"{comp}: Tc = {Tc:.2f} K, Pc = {Pc/1e5:.2f} bar, omega = {omega:.4f}, M = {Mw:.3f} kg/mol")
+    except Exception as e:
+        print(f"{comp}: Nije dostupno u CoolProp ({e})")
+
+sys.exit(0)     """   
 
 
 

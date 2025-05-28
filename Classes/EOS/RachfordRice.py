@@ -12,18 +12,17 @@ class RachfordRice:
         K = [Calculations.wilson_K(comp, T, P) for comp in components]
         print(f"[DEBUG] Inicijalni K: {K}")
 
-        if all(Ki < 1.0 for Ki in K):
-            print("[DEBUG] Svi K < 1 → tekuća faza")
-            return 0.0, z, [K[i] * z[i] for i in range(len(z))], method, 0
-        if all(Ki > 1.0 for Ki in K):
-            print("[DEBUG] Svi K > 1 → parna faza")
-            return 1.0, [z[i] / K[i] for i in range(len(z))], z, method, 0
-
         last_valid_solution = None
 
         for iteration in range(max_iter):
-            print(f"[DEBUG] Iteracija {iteration + 1}")
-            V = None
+
+            ####################################   start osnovne provjere   #####################################    
+            if all(Ki < 1.0 for Ki in K):
+                 print("[DEBUG] Svi K < 1 → tekuća faza")
+                 return 0.0, z, [K[i] * z[i] for i in range(len(z))], method, 0
+            if all(Ki > 1.0 for Ki in K):
+                 print("[DEBUG] Svi K > 1 → parna faza")
+                 return 1.0, [z[i] / K[i] for i in range(len(z))], z, method, 0
 
             K_min, K_max = min(K), max(K)
             V_min = max(0.0, 1.0 / (1.0 - K_max))
@@ -35,8 +34,14 @@ class RachfordRice:
             print(f"  f(V_min) = {f_min:.6f}, f(V_max) = {f_max:.6f}")
 
             if V_min > V_max or f_min * f_max > 0:
-                print("[DEBUG] Nema valjanog presjeka → fallback")
-                return last_valid_solution if last_valid_solution else (0.0, z, [K[i] * z[i] for i in range(len(z))], method, iteration + 1)
+                print("[DEBUG] Nema valjanog presjeka - fallback")
+                return last_valid_solution if last_valid_solution else (-1.0, z, [K[i] * z[i] for i in range(len(z))], method, iteration + 1)
+
+            ####################################   end osnovne provjere   #####################################
+
+
+            print(f"[DEBUG] Iteracija {iteration + 1}")
+            V = None
 
             if method == "root_scalar":
                 result = root_scalar(RachfordRice.rachford_rice_function, args=(z, K),
@@ -45,15 +50,15 @@ class RachfordRice:
                     V = result.root
                     print(f"  V (root_scalar) = {V:.6f}")
                 else:
-                    print("[DEBUG] root_scalar nije konvergirao → fallback")
+                    print("[DEBUG] root_scalar nije konvergirao - fallback")
                     return last_valid_solution if last_valid_solution else (0.0, z, [K[i] * z[i] for i in range(len(z))], method, iteration + 1)
                
             elif method == "fsolve":
                 V = fsolve(lambda V: RachfordRice.rachford_rice_function(V, z, K), 0.5)[0]
                 print(f"  V (fsolve) = {V:.6f}")
                 if not (0.0 <= V <= 1.0):
-                    print("[DEBUG] fsolve dao nerealno V → fallback")
-                    return last_valid_solution if last_valid_solution else (0.0, z, [K[i] * z[i] for i in range(len(z))], method, iteration + 1)
+                    print("[DEBUG] fsolve dao nerealno V - fallback")
+                    return last_valid_solution if last_valid_solution else (-1.0, z, [K[i] * z[i] for i in range(len(z))], method, iteration + 1)
             else:
                 raise ValueError(f"Nepoznata metoda: {method}")
 
@@ -70,10 +75,10 @@ class RachfordRice:
             last_valid_solution = (V, x, y, method, iteration + 1)
 
             if V < 1e-3:
-                print("[DEBUG] V vrlo mali → tekuća faza")
+                print("[DEBUG] V vrlo mali - tekuća faza")
                 return 0.0, z, [K[i] * z[i] for i in range(len(z))], method, iteration + 1
             if all(abs(Ki - 1.0) < 1e-3 for Ki in new_K):
-                print("[DEBUG] Svi K ≈ 1 → ravnoteža")
+                print("[DEBUG] Svi K ≈ 1 - ravnoteža")
                 return 0.5, z, z, method, iteration + 1
             if all(abs((new_K[i] - K[i]) / K[i]) < tol for i in range(len(K))):
                 print("[DEBUG] K konvergirao")
@@ -81,8 +86,8 @@ class RachfordRice:
 
             K = new_K
 
-        print("[DEBUG] Dosegnut max_iter → vraćam zadnje poznato rješenje")
-        return last_valid_solution if last_valid_solution else (0.0, z, [K[i] * z[i] for i in range(len(z))], method, max_iter)
+        print("[DEBUG] Dosegnut max_iter - vraćam zadnje poznato rješenje")
+        return last_valid_solution 
 
     @staticmethod
     def rachford_rice_function(V, z, K):
