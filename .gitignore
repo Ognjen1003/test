@@ -1,4 +1,20 @@
-venv
-__pycache__
+# Virtual environment
+.venv/
+venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Logs
 *.log
-Logs
+Logs/
+logs/
+
+# VS Code
+.vscode/
+
+# OS-specific
+.DS_Store
+Thumbs.db
