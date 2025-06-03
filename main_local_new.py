@@ -9,6 +9,9 @@ import matplotlib.patches as mpatches
 import seaborn as sns
 import sys
 from CoolProp.CoolProp import PropsSI
+import time
+
+start_time = time.time() 
 
 def check_total_fraction(data, label):
     total = sum(comp["fraction"] for comp in data["components"])
@@ -120,15 +123,16 @@ check_total_fraction(data_oxyfuel_comp1, "Oxyfuel Comp 1")
 check_total_fraction(data_oxyfuel_comp2, "Oxyfuel Comp 2")
 check_total_fraction(data_oxyfuel_comp3, "Oxyfuel Comp 3")
 
-temperatures = np.arange(230, 920, 1)  
-pressures = np.arange(12, 900, 1)      
+temperatures = np.arange(250, 550, 1)  
+pressures = np.arange(1, 185, 1)      
 results = pd.DataFrame(index=pressures, columns=temperatures)
+resultsIteration = pd.DataFrame(index=pressures, columns=temperatures)
 
 
 
 components = []
 
-for comp in data_oxyfuel_comp3["components"]:
+for comp in data["components"]:
     component = ComponentNew(
         name=comp["name"],
         formula=comp["formula"],
@@ -172,12 +176,17 @@ for Tt in temperatures:
             ) 
         if result["V"] == -1.0:
             results.at[Pp, Tt] = np.nan 
+            resultsIteration.at[Pp, Tt] = result["iteration"]
         else:
             results.at[Pp, Tt] = result["V"]
+            resultsIteration.at[Pp, Tt] = result["iteration"]
+            print(f"{Tt} ---- {Pp}")
 
 
 print(results)
-results.to_csv("results3.csv")
+print(resultsIteration)
+results.to_csv("results3.xlsx")
+resultsIteration.to_csv("resultsIT.xlsx")
 
 results_float = results.astype(float)
 
@@ -219,15 +228,21 @@ plt.gca().invert_yaxis()
 
 plt.xlabel("Temperatura [K]")
 plt.ylabel("Tlak [bar]")
-plt.title("Oxyfuel Comp 2 (0 = crna (L), 1 = bijela (V))")
+plt.title("")
 
 
-black_patch = mpatches.Patch(color='black', label='1 faza')
-white_patch = mpatches.Patch(color='white', label='1 faza')
-plt.legend(handles=[black_patch, white_patch], loc='upper left', title='Jednofazna podrucja')
+#black_patch = mpatches.Patch(color='black', label='1 faza')
+#white_patch = mpatches.Patch(color='white', label='1 faza')
+#plt.legend(handles=[black_patch, white_patch], loc='upper left', title='Jednofazna podrucja')
 
 plt.tight_layout()
 plt.show()
+
+
+end_time = time.time()  # Kraj mjerenja
+
+elapsed_time = end_time - start_time
+print(f"Vrijeme : {elapsed_time:.5f} sek")
 
 #print(f"-------{result["V"]}")
 

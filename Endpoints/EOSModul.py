@@ -9,8 +9,8 @@ def perform_eos_calculation(components: List[Component], T: float, P: float, z: 
 
     TIMEFORMAT = "%H:%M:%S"
 
-    print('================================================================')           
-    print(f'start {datetime.datetime.now().strftime(TIMEFORMAT)}')     
+    #print('================================================================')           
+    #print(f'start {datetime.datetime.now().strftime(TIMEFORMAT)}')     
 
     """
     components = [
