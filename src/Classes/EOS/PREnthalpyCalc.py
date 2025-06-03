@@ -1,8 +1,8 @@
 import math
 from typing import List
-from Classes.Component import Component
-from Classes.EOS.PengRobinsonEOS import PengRobinsonEOS
-from Classes.EOS.RachfordRice import RachfordRice
+from src.Classes.Component import Component
+from src.Classes.EOS.PengRobinsonEOS import PengRobinsonEOS
+from src.Classes.EOS.RachfordRice import RachfordRice
 
 class PREnthalpyCalc:
 

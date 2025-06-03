@@ -1,14 +1,16 @@
 from typing import List, Tuple
 from scipy.optimize import root_scalar, fsolve
-from Classes.Component import Component
-from Classes.EOS.EOSUtil import Calculations
+from src.Classes.Component import Component
+from src.Classes.EOS.EOSUtil import Calculations
+from src.EnumsClasses import SolveMethod
 
 class RachfordRice:
 
     @staticmethod
-    def solve(z: List[float], eos_class, components: List[Component], T: float, P: float,
-              method: str = "root_scalar", max_iter: int = 100, tol: float = 1e-6):
-
+    def solve(eos_class, components: List[Component], T: float, P: float,
+              method: SolveMethod = SolveMethod.FSOLVE, max_iter: int = 100, tol: float = 1e-6):
+        
+        z = [comp.fraction for comp in components]
         K = [Calculations.wilson_K(comp, T, P) for comp in components]
         #print(f"[DEBUG] Inicijalni K: {K}")
 
@@ -44,7 +46,7 @@ class RachfordRice:
             #print(f"[DEBUG] Iteracija {iteration + 1}")
             V = None
 
-            if method == "root_scalar":
+            if method == SolveMethod.ROOT_SCALAR:
                 result = root_scalar(RachfordRice.rachford_rice_function, args=(z, K),
                                          method='bisect', bracket=[V_min, V_max], xtol=tol)
                 if result.converged:
@@ -54,7 +56,7 @@ class RachfordRice:
                     print("[DEBUG] root_scalar nije konvergirao - fallback")
                     return last_valid_solution if last_valid_solution else (0.0, z, [K[i] * z[i] for i in range(len(z))], method, iteration + 1)
                
-            elif method == "fsolve":
+            elif method == SolveMethod.FSOLVE:
                 V = fsolve(lambda V: RachfordRice.rachford_rice_function(V, z, K), 0.5)[0]
                 #print(f"  V (fsolve) = {V:.6f}")
                 if not (0.0 <= V <= 1.0):

@@ -1,6 +1,6 @@
 import math
 from .EOS import EOSBase
-import Classes.Component as Component
+import src.Classes.Component as Component
 from typing import List
 
 class SRKEOS(EOSBase):

@@ -1,4 +1,4 @@
-from Classes.Component import Component
+from src.Classes.Component import Component
 from typing import List
 import math
 
