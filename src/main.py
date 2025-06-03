@@ -1,12 +1,13 @@
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse, HTMLResponse
-from Endpoints.FlowModul import calculate_steps
-from Endpoints.EOSModul import perform_eos_calculation
-from Models.FlowModels import FlowInputModel
-from Models.EOSModels import EOSInputModel
-from Classes.LoggerSingleton import LoggerSingleton
+from src.Endpoints.FlowModul import calculate_steps
+from src.Endpoints.EOSModul import perform_eos_calculation
+from src.Models.FlowModels import FlowInputModel
+from src.Models.EOSModels import EOSInputModel
+from src.Classes.Logging.LoggerSingleton import LoggerSingleton
+from typing import List
+from src.Classes.Component import Component
 import pandas as pd
-from Classes.Component import Component
 
 #import sys
 #import os
@@ -49,34 +50,19 @@ async def calculate(input_data: FlowInputModel = None, request: Request = None):
 
 #EOS calc
 @app.post("/eos_calc")
-async def calculate_EOS(input_data: EOSInputModel, request: Request = None):
+async def calculate_EOS(input_data: EOSInputModel, request: Request):
     
-    LoggerSingleton().log_info(f"eos_calc: Received input data from {request.client.host}: {input_data}")
-    components = [Component(**comp.model_dump()) for comp in input_data.components]
+    LoggerSingleton().log_info(f"eos_calc: Received input data from {request.client.host}: {input_data.model_dump()}")
+
     try:
-        components = [
-            Component(
-                name=comp.name,
-                Tc=comp.Tc,
-                Pc=comp.Pc,
-                omega=comp.omega,
-                AntoineA=comp.AntoineA,
-                AntoineB=comp.AntoineB,
-                AntoineC=comp.AntoineC,
-                CpA=comp.CpA,
-                CpB=comp.CpB,
-                CpC=comp.CpC,
-                CpD=comp.CpD
-            )
-            for comp in input_data.components
-        ]
+        components: List[Component] = [comp_input.Cmp for comp_input in input_data.components]
 
         result = perform_eos_calculation(
             components=components,
             T=input_data.T,
             P=input_data.P,
-            z=input_data.z,
-            eos_type=input_data.eos_type
+            eos_type=input_data.eos_type,
+            method=input_data.method
         )
 
         return result
@@ -86,7 +72,7 @@ async def calculate_EOS(input_data: EOSInputModel, request: Request = None):
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         LoggerSingleton().log_info(f"Exception: Received input data from {request.client.host}: error: {e}")
-        raise HTTPException(status_code=400, detail=str("Exception: " + e.__str__()))
+        raise HTTPException(status_code=500, detail=f"Exception: {e}")
 
 
 

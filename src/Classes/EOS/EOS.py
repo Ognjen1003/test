@@ -1,6 +1,6 @@
 import math
 from typing import List, Tuple
-from Classes.Component import Component
+from src.Classes.Component import Component
 
 class EOSBase:
     """

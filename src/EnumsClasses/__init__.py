@@ -1,0 +1,1 @@
+from src.EnumsClasses.MethodsAndTypes import SolveMethod, EOSType

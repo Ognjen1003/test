@@ -1,8 +1,8 @@
 import pandas as pd
 import warnings
 import datetime
-from Classes.Flow.Flow import Flow 
-from Classes.Flow.LookupTableSingleton import LookupTableSingleton 
+from src.Classes.Flow.Flow import Flow 
+from src.Classes.Flow.LookupTableSingleton import LookupTableSingleton 
 import sys
 import os
 
