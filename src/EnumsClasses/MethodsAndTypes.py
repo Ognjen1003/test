@@ -1,8 +1,8 @@
 from enum import Enum
 
 class SolveMethod(str, Enum):
-    FSOLVE = "fsolve"
-    ROOT_SCALAR = "root_scalar"
+    FSOLVE = "FSOLVE"
+    ROOT_SCALAR = "ROOT_SCALAR"
 
 class EOSType(str, Enum):
     PR = "PR"

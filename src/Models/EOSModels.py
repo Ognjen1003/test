@@ -1,6 +1,7 @@
 from pydantic import BaseModel, ConfigDict
 from typing import List
 from src.Classes.Component import Component
+from src.EnumsClasses import SolveMethod
 
 
 class ComponentInput(BaseModel):
@@ -14,4 +15,5 @@ class EOSInputModel(BaseModel):
     T: float
     P: float
     eos_type: str  # "PR" or "SRK"
-    method: str
+    method: SolveMethod
+    calculate_enthalpy: bool

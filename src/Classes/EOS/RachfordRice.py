@@ -15,6 +15,7 @@ class RachfordRice:
         #print(f"[DEBUG] Inicijalni K: {K}")
 
         last_valid_solution = None
+        eos = eos_class(components, T, P)
 
         for iteration in range(max_iter):
 
@@ -38,7 +39,7 @@ class RachfordRice:
 
             if V_min > V_max or f_min * f_max > 0:
                 #print("[DEBUG] Nema valjanog presjeka - fallback")
-                return  (-1.0, z, [K[i] * z[i] for i in range(len(z))], method, iteration + 1)
+                return  (-1.0, z, [K[i] * z[i] for i in range(len(z))], method, iteration + 1, eos.Zl, eos.Zv )
 
             ####################################   end osnovne provjere   #####################################
 
@@ -54,38 +55,38 @@ class RachfordRice:
                     print(f"  V (root_scalar) = {V:.6f}")
                 else:
                     print("[DEBUG] root_scalar nije konvergirao - fallback")
-                    return last_valid_solution if last_valid_solution else (0.0, z, [K[i] * z[i] for i in range(len(z))], method, iteration + 1)
+                    return last_valid_solution if last_valid_solution else (0.0, z, [K[i] * z[i] for i in range(len(z))], method, iteration + 1, eos.Zl, eos.Zv)
                
             elif method == SolveMethod.FSOLVE:
                 V = fsolve(lambda V: RachfordRice.rachford_rice_function(V, z, K), 0.5)[0]
                 #print(f"  V (fsolve) = {V:.6f}")
                 if not (0.0 <= V <= 1.0):
                     #print("[DEBUG] fsolve dao nerealno V - fallback")
-                    return (-1.0, z, [K[i] * z[i] for i in range(len(z))], method, iteration + 1)
+                    return (-1.0, z, [K[i] * z[i] for i in range(len(z))], method, iteration + 1, eos.Zl, eos.Zv)
             else:
                 raise ValueError(f"Nepoznata metoda: {method}")
 
             x = [z[i] / (1 + V * (K[i] - 1)) for i in range(len(z))]
             y = [K[i] * x[i] for i in range(len(z))]
 
-            eos_vap = eos_class(components, T, P)
-            eos_liq = eos_class(components, T, P)
-            phi_v = eos_vap.fugacity_coeff(y, 'vapor')
-            phi_l = eos_liq.fugacity_coeff(x, 'liquid')
+
+            phi_v = eos.fugacity_coeff(y, 'vapor')
+            phi_l = eos.fugacity_coeff(x, 'liquid')
+
             new_K = [phi_l[i] / phi_v[i] for i in range(len(z))]
             #print(f"  Novi K: {new_K}")
 
-            last_valid_solution = (V, x, y, method, iteration + 1)
+            last_valid_solution = (V, x, y, method, iteration + 1, eos.Zl, eos.Zv)
 
             #if V < 1e-3:
             #    print("[DEBUG] V vrlo mali - tekuća faza")
             #   return 0.0, z, [K[i] * z[i] for i in range(len(z))], method, iteration + 1
             if all(abs(Ki - 1.0) < 1e-3 for Ki in new_K):
                 #print("[DEBUG] Svi K ≈ 1 - ravnoteža")
-                return 0.5, z, z, method, iteration + 1
+                return 0.5, z, z, method, iteration + 1, eos.Zl, eos.Zv
             if all(abs((new_K[i] - K[i]) / K[i]) < tol for i in range(len(K))):
                 #print("[DEBUG] K konvergirao")
-                return V, x, y, method, iteration + 1
+                return V, x, y, method, iteration + 1, eos.Zl, eos.Zv
 
             K = new_K
 

@@ -30,15 +30,15 @@ check_total_fraction(ComponentData.data_oxyfuel_comp1, "Oxyfuel Comp 1")
 check_total_fraction(ComponentData.data_oxyfuel_comp2, "Oxyfuel Comp 2")
 check_total_fraction(ComponentData.data_oxyfuel_comp3, "Oxyfuel Comp 3")
 
-temperatures = np.arange(275, 297, 1)  
-pressures = np.arange(40, 100, 1)      
+temperatures = np.arange(300, 540, 2)  
+pressures = np.arange(1, 181, 2)      
 results = pd.DataFrame(index=pressures, columns=temperatures)
 resultsIteration = pd.DataFrame(index=pressures, columns=temperatures)
 
 
 components = []
 
-for comp in ComponentData.data_oxyfuel_comp1["components"]:
+for comp in ComponentData.data["components"]:
     component = Component(
         name=comp["name"],
         formula=comp["formula"],
@@ -62,7 +62,8 @@ for Tt in temperatures:
             Tt,        
             Pp,
             EOSType.PR,            
-            SolveMethod.FSOLVE
+            SolveMethod.FSOLVE,
+            False
             ) 
         if result["V"] == -1.0:
             results.at[Pp, Tt] = np.nan 

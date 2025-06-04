@@ -91,8 +91,6 @@ class PREnthalpyCalc:
             H_vap = self.get_enthalpy(y, T, P, Z_v)
             return V * H_vap + (1 - V) * H_liq
 
-    def compute_enthalpy_from_z(self, z: List[float], T: float, P: float) -> float:
-        eos = PengRobinsonEOS(self._components, T, P)
-        V, x, y, m, i = RachfordRice.solve(z, PengRobinsonEOS, self._components, T, P)
-        Z_l, Z_v = eos.get_Z_factors(x, y)
-        return self.get_total_enthalpy(x, y, Z_l, Z_v, V, T, P)
+    def compute_enthalpy_from_z(self, T: float, P: float) -> float:
+        V, x, y, m, i, Zl, Zv = RachfordRice.solve(PengRobinsonEOS, self._components, T, P)
+        return self.get_total_enthalpy(x, y, Zl, Zv, V, T, P)

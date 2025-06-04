@@ -14,7 +14,9 @@ class EOSBase:
         self.T = T                    
         self.P = P                   
         self.a_i = []                 
-        self.b_i = []                 
+        self.b_i = []
+        self.Zv = None
+        self.Zl = None                 
         self.calc_parameters()      
 
 
@@ -39,6 +41,9 @@ class EOSBase:
 
         Z_liq = self.calc_Z_factor(A_liq, B_liq, phase='liquid')
         Z_vap = self.calc_Z_factor(A_vap, B_vap, phase='vapor')
+
+        self.Zl = Z_liq
+        self.Zv = Z_vap
 
         return Z_liq, Z_vap
     

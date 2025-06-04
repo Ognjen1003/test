@@ -62,7 +62,8 @@ async def calculate_EOS(input_data: EOSInputModel, request: Request):
             T=input_data.T,
             P=input_data.P,
             eos_type=input_data.eos_type,
-            method=input_data.method
+            method=input_data.method,
+            calculate_enthalpy=input_data.calculate_enthalpy
         )
 
         return result
@@ -72,7 +73,7 @@ async def calculate_EOS(input_data: EOSInputModel, request: Request):
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         LoggerSingleton().log_info(f"Exception: Received input data from {request.client.host}: error: {e}")
-        raise HTTPException(status_code=500, detail=f"Exception: {e}")
+        raise HTTPException(status_code=500, detail=f"Exception main.py: {e}")
 
 
 
