@@ -22,6 +22,15 @@ pokretanje iz testova lokalno
     set PYTHONPATH=%cd%       # da ide na src folder, absolute path
     python -m tests.local.test_main_local
 
+CMake 
+    otvoriti x64 Native Tools Command Prompt
+    rm -rf build
+    mkdir build
+    cd build
+    cmake .. -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release
+    nmake
+    ista verzija pythona kao i pyd....
+
 
 Svi importi su apsolutni, npr.:
     from src.Endpoints.EOSModul import perform_eos_calculation
