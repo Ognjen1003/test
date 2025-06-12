@@ -1,8 +1,9 @@
 import sys
 import os
 #sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
-sys.path.append(os.path.dirname(__file__))
-
+#sys.path.append(os.path.dirname(__file__))
+bin_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'bin'))
+sys.path.insert(0, bin_path)  # stavimo ga kao prvi prioritet
 
 print("Current dir:", os.getcwd())
 print("sys.path:", sys.path)
@@ -111,6 +112,8 @@ for res in cpp_results:
     iterations = res.iterations
 
     if P in results.index and T in results.columns:
+        if V == -1:
+            V = np.nan 
         results.at[P, T] = V
         resultsIteration.at[P, T] = iterations
 
