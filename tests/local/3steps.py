@@ -123,7 +123,6 @@ def calculate_pressure_from_eos(df, T_K, V_m3):
                 CpD=comp.CpD
             )
             component_objs.append(c_new)
-            fractions.append(c_new.fraction)
 
     eos = PengRobinsonEOS(component_objs, T=T_K, P=1e5)  # dummy P
     n_total = df["Mol [mol]"].sum()
