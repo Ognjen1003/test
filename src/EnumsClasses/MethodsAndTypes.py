@@ -7,3 +7,8 @@ class SolveMethod(str, Enum):
 class EOSType(str, Enum):
     PR = "PR"
     SRK = "SRK"
+
+class Phase(str, Enum):
+    Vapor = "Vapor"
+    Liquid = "Liquid"
+    Vapor_Liquid = "Vapor_Liquid"

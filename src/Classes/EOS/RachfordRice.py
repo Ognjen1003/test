@@ -73,6 +73,7 @@ class RachfordRice:
             phi_v = eos.fugacity_coeff(y, 'vapor')
             phi_l = eos.fugacity_coeff(x, 'liquid')
 
+            
             new_K = [phi_l[i] / phi_v[i] for i in range(len(z))]
             #print(f"  Novi K: {new_K}")
 

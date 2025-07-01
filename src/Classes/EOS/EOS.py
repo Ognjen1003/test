@@ -111,6 +111,12 @@ class EOSBase:
         """
         coeffs = self.get_coefficients(A, B)
         roots = self.solve_cubic(coeffs)
+        
+        if phase == 'vapor':
+            self.Zv = max(roots)
+        else:
+            self.Zl = min(roots)
+
         return max(roots) if phase == 'vapor' else min(roots)
 
     def fugacity_coeff(self, x: List[float], phase: str = 'vapor') -> List[float]:
@@ -143,3 +149,19 @@ class EOSBase:
             phi.append(math.exp(ln_phi))
 
         return phi
+    
+    def get_pressure_with_Z(self, v_molar: float, phase: str = 'vapor') -> float:
+        z = [comp.fraction for comp in self.components]
+
+        a_mix = 0.0
+        b_mix = 0.0
+        for i in range(len(z)):
+            b_mix += z[i] * self.b_i[i]
+            for j in range(len(z)):
+                a_mix += z[i] * z[j] * math.sqrt(self.a_i[i] * self.a_i[j])
+
+        A = a_mix * self.P / (self.R ** 2 * self.T ** 2)
+        B = b_mix * self.P / (self.R * self.T)
+
+        Z = self.calc_Z_factor(A, B, phase)
+        return Z * self.R * self.T / v_molar
