@@ -1,5 +1,5 @@
 from src.Endpoints.EOSModul import perform_eos_calculation
-from src.Classes.Component import Component
+from Models.Component import Component
 from matplotlib.colors import ListedColormap, BoundaryNorm
 from tests.testData import ComponentData
 from src.EnumsClasses import SolveMethod, EOSType
@@ -16,7 +16,7 @@ import time
 #import os
 #sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
-start_time = time.time() 
+
 
 def check_total_fraction(data, label):
     total = sum(comp["fraction"] for comp in data["components"])
@@ -30,8 +30,8 @@ check_total_fraction(ComponentData.data_oxyfuel_comp1, "Oxyfuel Comp 1")
 check_total_fraction(ComponentData.data_oxyfuel_comp2, "Oxyfuel Comp 2")
 check_total_fraction(ComponentData.data_oxyfuel_comp3, "Oxyfuel Comp 3")
 
-temperatures = np.arange(271, 296, 0.1)  
-pressures = np.arange(40, 100, 0.1)      
+temperatures = np.arange(271, 296, 1)  
+pressures = np.arange(40, 100, 1)      
 results = pd.DataFrame(index=pressures, columns=temperatures)
 resultsIteration = pd.DataFrame(index=pressures, columns=temperatures)
 
@@ -55,6 +55,8 @@ for comp in ComponentData.data_oxyfuel_comp1["components"]:
     components.append(component)
 
 
+start_time = time.time() 
+
 for Tt in temperatures:
     for Pp in pressures:
         result = perform_eos_calculation(
@@ -71,7 +73,12 @@ for Tt in temperatures:
         else:
             results.at[Pp, Tt] = result["V"]
             resultsIteration.at[Pp, Tt] = result["iteration"]
-            print(f"{Tt} ---- {Pp}")
+            #print(f"{Tt} ---- {Pp}")
+
+
+
+end_time = time.time()  # Kraj mjerenja
+elapsed_time = end_time - start_time
 
 
 print(results)
@@ -129,8 +136,5 @@ plt.title("OxyFuel 85% CO2")
 plt.tight_layout()
 plt.show()
 
-
-end_time = time.time()  # Kraj mjerenja
-
-elapsed_time = end_time - start_time
 print(f"Vrijeme : {elapsed_time:.5f} sek")
+

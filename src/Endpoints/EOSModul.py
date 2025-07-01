@@ -1,6 +1,6 @@
 import datetime
 from typing import List
-from src.Classes.Component import Component
+from Models.Component import Component
 from src.Classes.EOS import RachfordRice, PengRobinsonEOS, SRKEOS, PREnthalpyCalc
 from src.EnumsClasses import SolveMethod, EOSType
 import math
@@ -29,7 +29,7 @@ def perform_eos_calculation(components: List[Component], T: float, P: float, eos
         "y": y,
         "method": method_used,
         "iteration": iteration,
-        "eos_type": eos_name
+        "eos_type": eos_class
     }
 
     if calculate_enthalpy:

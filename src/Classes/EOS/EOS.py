@@ -1,6 +1,7 @@
 import math
 from typing import List, Tuple
-from src.Classes.Component import Component
+from Models.Component import Component
+import numpy as np
 
 class EOSBase:
     """
@@ -17,22 +18,23 @@ class EOSBase:
         self.b_i = []
         self.Zv = None
         self.Zl = None                 
-        self.calc_parameters()      
+        self.calc_parameters()   
 
 
-    def get_Z_factors(self, x: List[float], y: List[float]) -> Tuple[float, float]: 
+    def calc_parameters(self):
+        alpha_vals = np.array([self.alpha(comp) for comp in self.components])
+        self.a_i = np.array([self.a_formula(comp) for comp in self.components]) * alpha_vals
+        self.b_i = np.array([self.b_formula(comp) for comp in self.components])
 
-        def compute_A_B(comp_frac: List[float]) -> Tuple[float, float]:
-            a_mix = 0.0
-            b_mix = 0.0
-            N = len(comp_frac)
 
-            for i in range(N):
-                b_mix += comp_frac[i] * self.b_i[i]
-                for j in range(N):
-                    a_mix += comp_frac[i] * comp_frac[j] * math.sqrt(self.a_i[i] * self.a_i[j])
+    def get_Z_factors(self, x: List[float], y: List[float]) -> Tuple[float, float]:
+        x = np.array(x)
+        y = np.array(y)
 
-            A = a_mix * self.P / (self.R**2 * self.T**2)
+        def compute_A_B(comp_frac: np.ndarray) -> Tuple[float, float]:
+            b_mix = np.dot(comp_frac, self.b_i)
+            a_mix = np.sum(np.outer(comp_frac, comp_frac) * np.sqrt(np.outer(self.a_i, self.a_i)))
+            A = a_mix * self.P / (self.R ** 2 * self.T ** 2)
             B = b_mix * self.P / (self.R * self.T)
             return A, B
 
@@ -44,7 +46,6 @@ class EOSBase:
 
         self.Zl = Z_liq
         self.Zv = Z_vap
-
         return Z_liq, Z_vap
     
     
@@ -53,17 +54,6 @@ class EOSBase:
         Placeholder method alpha correction
         """
         raise NotImplementedError
-
-    def calc_parameters(self):
-        """
-        ai, bi for all components
-        """
-        for comp in self.components:
-            alpha_i = self.alpha(comp)
-            a = self.a_formula(comp) * alpha_i
-            b = self.b_formula(comp)
-            self.a_i.append(a)
-            self.b_i.append(b)
 
     def a_formula(self, comp: Component) -> float:
         raise NotImplementedError
@@ -119,46 +109,36 @@ class EOSBase:
 
         return max(roots) if phase == 'vapor' else min(roots)
 
-    def fugacity_coeff(self, x: List[float], phase: str = 'vapor') -> List[float]:
-        """
-        fugacity
-        """
-        a_mix = 0.0
-        b_mix = 0.0
-        N = len(x)
 
-        for i in range(N):
-            b_mix += x[i] * self.b_i[i]
-            for j in range(N):
-                a_mix += x[i] * x[j] * math.sqrt(self.a_i[i] * self.a_i[j])
+    def fugacity_coeff(self, x: List[float], phase: str = 'vapor') -> list:
+        x = np.array(x)
+        a_mix = np.sum(np.outer(x, x) * np.sqrt(np.outer(self.a_i, self.a_i)))
+        b_mix = np.dot(x, self.b_i)
 
         A = a_mix * self.P / (self.R**2 * self.T**2)
         B = b_mix * self.P / (self.R * self.T)
         Z = self.calc_Z_factor(A, B, phase)
 
+        sqrt_ai = np.sqrt(self.a_i)
         phi = []
-        for i in range(N):
-            bi = self.b_i[i]
-            ai = self.a_i[i]
-            sum_a = sum(x[j] * math.sqrt(ai * self.a_i[j]) for j in range(N))
-            term1 = bi / b_mix * (Z - 1) - math.log(Z - B)
-            term2 = A / (2 * math.sqrt(2) * B)
-            term3 = 2 * sum_a / a_mix - bi / b_mix
-            term4 = math.log((Z + (1 + math.sqrt(2)) * B) / (Z + (1 - math.sqrt(2)) * B))
-            ln_phi = term1 - term2 * term3 * term4
-            phi.append(math.exp(ln_phi))
 
-        return phi
+        for i in range(len(x)):
+            sum_a = np.sum(x * np.sqrt(self.a_i[i] * self.a_i))
+            bi = self.b_i[i]
+            term1 = bi / b_mix * (Z - 1) - np.log(Z - B)
+            term2 = A / (2 * np.sqrt(2) * B)
+            term3 = 2 * sum_a / a_mix - bi / b_mix
+            term4 = np.log((Z + (1 + np.sqrt(2)) * B) / (Z + (1 - np.sqrt(2)) * B))
+            ln_phi = term1 - term2 * term3 * term4
+            phi.append(np.exp(ln_phi))
+
+        return np.array(phi)
+
     
     def get_pressure_with_Z(self, v_molar: float, phase: str = 'vapor') -> float:
-        z = [comp.fraction for comp in self.components]
-
-        a_mix = 0.0
-        b_mix = 0.0
-        for i in range(len(z)):
-            b_mix += z[i] * self.b_i[i]
-            for j in range(len(z)):
-                a_mix += z[i] * z[j] * math.sqrt(self.a_i[i] * self.a_i[j])
+        z = np.array([comp.fraction for comp in self.components])
+        a_mix = np.sum(np.outer(z, z) * np.sqrt(np.outer(self.a_i, self.a_i)))
+        b_mix = np.dot(z, self.b_i)
 
         A = a_mix * self.P / (self.R ** 2 * self.T ** 2)
         B = b_mix * self.P / (self.R * self.T)

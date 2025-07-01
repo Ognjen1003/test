@@ -1,6 +1,6 @@
 import math
 from typing import List
-from src.Classes.Component import Component
+from Models.Component import Component
 from src.Classes.EOS.PengRobinsonEOS import PengRobinsonEOS
 from src.Classes.EOS.RachfordRice import RachfordRice
 

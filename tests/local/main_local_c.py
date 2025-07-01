@@ -13,7 +13,7 @@ import eos_cpp
 print("Module loaded:", eos_cpp)
 
 from src.Endpoints.EOSModul import perform_eos_calculation
-from src.Classes.Component import Component
+from Models.Component import Component
 from matplotlib.colors import ListedColormap, BoundaryNorm
 from tests.testData import ComponentData
 from src.EnumsClasses import SolveMethod, EOSType

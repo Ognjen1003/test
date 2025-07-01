@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict
 from typing import List
-from src.Classes.Component import Component
+from Models.Component import Component
 from src.EnumsClasses import SolveMethod
 
 

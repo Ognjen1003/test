@@ -1,7 +1,7 @@
 from typing import List, Dict
 import src.Classes.EOS.RachfordRice as RR
 from src.Classes.EOS import PengRobinsonEOS
-from src.Classes.Component import Component
+from Models.Component import Component
 import numpy as np
 import matplotlib.pyplot as plt
 from CoolProp.CoolProp import PropsSI
@@ -10,8 +10,8 @@ import pandas as pd
 # ===== GENERALNE STVARI ZA SAD =====
 R = 8.314462618  # J/(mol·K)
 V_LOOP = 0.05  # m3
-P_target_bar=60
-T_target_C=50
+P_target_bar=70
+T_target_C=60
 P_init_bar=1.1
 T_init_C=20
 dosing_volume_liters=10

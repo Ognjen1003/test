@@ -1,7 +1,7 @@
 from typing import List, Dict
 import src.Classes.EOS.RachfordRice as RR
 from src.Classes.EOS import PengRobinsonEOS
-from src.Classes.Component import Component
+from Models.Component import Component
 import numpy as np
 import matplotlib.pyplot as plt
 
