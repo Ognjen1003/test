@@ -1,5 +1,5 @@
 from Models.Component import Component
-from tests.testData import ComponentData
+from data.testData import ComponentData
 from src.Classes.EOS import PREnthalpyCalc
 
 

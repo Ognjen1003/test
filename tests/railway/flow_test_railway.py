@@ -1,6 +1,6 @@
 import requests
 import datetime
-from tests.testData import ComponentData
+from data.testData import ComponentData
 
 url = "http://127.0.0.1:8000/calculate_flow"
 #url = "https://test-production-f873.up.railway.app/calculate_flow"

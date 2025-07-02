@@ -1,22 +1,26 @@
 from src.Endpoints.EOSModul import perform_eos_calculation
 from Models.Component import Component
 from matplotlib.colors import ListedColormap, BoundaryNorm
-from tests.testData import ComponentData
+from data.testData import ComponentData
 from src.EnumsClasses import SolveMethod, EOSType
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
 import seaborn as sns
 import time
+import sys
+import os
 
+bin_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'bin'))
+sys.path.insert(0, bin_path)  # stavim ga kao prvi prioritet
 
+print("Current dir:", os.getcwd())
+print("sys.path:", sys.path)
 
-#import sys
-#import os
-#sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+import eos_cpp 
 
-
+#u bin imas pyd file, to je dll sa zvanje iz cpp
+cplusplus = False
 
 def check_total_fraction(data, label):
     total = sum(comp["fraction"] for comp in data["components"])
@@ -24,6 +28,26 @@ def check_total_fraction(data, label):
         print(f"{label}: OK (sum = {total:.6f})")
     else:
         print(f"{label}: NOT OK (sum = {total:.6f})")
+
+def convert_to_cpp_components(py_components):
+    cpp_list = []
+    for c in py_components:
+        cpp_list.append(
+            eos_cpp.Component(
+                c.name,
+                c.formula,
+                c.Mw,
+                c.Tc,
+                c.Pc,
+                c.omega,
+                c.fraction,
+                c.CpA,
+                c.CpB,
+                c.CpC,
+                c.CpD
+            )
+        )
+    return cpp_list     
 
 
 check_total_fraction(ComponentData.data_oxyfuel_comp1, "Oxyfuel Comp 1")
@@ -57,29 +81,45 @@ for comp in ComponentData.data_oxyfuel_comp1["components"]:
 
 start_time = time.time() 
 
-for Tt in temperatures:
-    for Pp in pressures:
-        result = perform_eos_calculation(
-            components,
-            Tt,        
-            Pp,
-            EOSType.PR,            
-            SolveMethod.FSOLVE,
-            False
-            ) 
-        if result["V"] == -1.0:
-            results.at[Pp, Tt] = np.nan 
-            resultsIteration.at[Pp, Tt] = result["iteration"]
-        else:
-            results.at[Pp, Tt] = result["V"]
-            resultsIteration.at[Pp, Tt] = result["iteration"]
-            #print(f"{Tt} ---- {Pp}")
+if cplusplus:
+    temp_list = temperatures.tolist()
+    press_list = pressures.tolist()
+    cpp_components = convert_to_cpp_components(components)
+    cpp_results = eos_cpp.mainFromPython(cpp_components, temp_list, press_list)
 
+    for res in cpp_results:
+        T = res.T
+        P = res.P
+        V = res.V
+        iterations = res.iterations
 
+        if P in results.index and T in results.columns:
+            if V == -1:
+                V = np.nan 
+            results.at[P, T] = V
+            resultsIteration.at[P, T] = iterations
+
+else:
+    for Tt in temperatures:
+        for Pp in pressures:
+            result = perform_eos_calculation(
+                components,
+                Tt,        
+                Pp,
+                EOSType.PR,            
+                SolveMethod.FSOLVE,
+                False
+                ) 
+            if result["V"] == -1.0:
+                results.at[Pp, Tt] = np.nan 
+                resultsIteration.at[Pp, Tt] = result["iteration"]
+            else:
+                results.at[Pp, Tt] = result["V"]
+                resultsIteration.at[Pp, Tt] = result["iteration"]
+                #print(f"{Tt} ---- {Pp}")
 
 end_time = time.time()  # Kraj mjerenja
 elapsed_time = end_time - start_time
-
 
 print(results)
 print(resultsIteration)
@@ -133,8 +173,10 @@ plt.title("OxyFuel 85% CO2")
 #white_patch = mpatches.Patch(color='white', label='1 faza')
 #plt.legend(handles=[black_patch, white_patch], loc='upper left', title='Jednofazna podrucja')
 
+print(f"Vrijeme : {elapsed_time:.5f} sek")
+
 plt.tight_layout()
 plt.show()
 
-print(f"Vrijeme : {elapsed_time:.5f} sek")
+
 

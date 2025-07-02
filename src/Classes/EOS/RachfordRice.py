@@ -16,7 +16,7 @@ class RachfordRice:
         if RachfordRice.z is None:
             RachfordRice.z = np.array([comp.fraction for comp in components])
 
-        K = np.array([Calculations.wilson_K(comp, T, P) for comp in components])
+        K = Calculations.wilson_K_vectorized(components, T, P)
         #print(f"[DEBUG] Inicijalni K: {K}")
 
         last_valid_solution = None
@@ -45,6 +45,7 @@ class RachfordRice:
             if V_min > V_max or f_min * f_max > 0:
                 #print("[DEBUG] Nema valjanog presjeka - fallback")
                 return  (-1.0, RachfordRice.z, [K[i] * RachfordRice.z[i] for i in range(len(RachfordRice.z))], method, iteration + 1, eos.Zl, eos.Zv )
+                # -1 uglavnom odavde izlazi
 
             ####################################   end osnovne provjere   #####################################
 
@@ -92,11 +93,11 @@ class RachfordRice:
                 return 0.5, x.tolist(), y.tolist(), method, iteration + 1, eos.Zl, eos.Zv
 
             if np.all(np.abs((new_K - K) / K) < tol):
-                return V, x.tolist(), y.tolist(), method, iteration + 1, eos.Zl, eos.Zv
+                return V, x.tolist(), y.tolist(), method, iteration + 1, eos.Zl, eos.Zv # većina izlazi ovdje
 
             K = new_K
 
-        #print("[DEBUG] Dosegnut max_iter - vraćam zadnje poznato rješenje")
+        #print("[DEBUG] Dosegnut max_iter - vraćam zadnje poznato rješenje") - tesko tu dolazi
         return last_valid_solution 
 
     @staticmethod

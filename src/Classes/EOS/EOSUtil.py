@@ -1,11 +1,24 @@
 from Models.Component import Component
 from typing import List
 import math
+import numpy as np
 
 class Calculations:
     """
     Util methods phase equlibrium/Wilson, dew and bubble points - orphans for now
     """
+
+    
+    @staticmethod
+    def wilson_K_vectorized(components: List[Component], T: float, P: float) -> np.ndarray:
+        Tc = np.array([comp.Tc for comp in components])
+        Pc = np.array([comp.Pc for comp in components])
+        omega = np.array([comp.omega for comp in components])
+
+        Tr = T / Tc
+        ln_K = np.log(Pc / P) + 5.373 * (1 + omega) * (1 - 1 / Tr)
+        return np.exp(ln_K)
+    
     @staticmethod
     def wilson_K(component: Component, T: float, P: float) -> float:
         Tr = T / component.Tc

@@ -1,9 +1,13 @@
 import pandas as pd
+import os
 import json
 from CoolProp.CoolProp import PropsSI
 
 # Učitaj CSV (preskoči drugi red s jedinicama)
-df = pd.read_csv("coolprop_fluid_properties_with_units.csv", skiprows=[1])
+base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+csv_path = os.path.join(base_dir, 'data', 'coolprop_fluid_properties_with_units.csv')
+
+df = pd.read_csv(csv_path, skiprows=[1])
 
 # Ukloni prazne redove ako ih ima
 df.dropna(subset=["Fluid"], inplace=True)
