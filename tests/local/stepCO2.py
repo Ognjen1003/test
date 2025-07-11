@@ -6,6 +6,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from CoolProp.CoolProp import PropsSI
 import pandas as pd
+from CoolProp.CoolProp import AbstractState
+import numpy as np
 
 # ===== GENERALNE STVARI ZA SAD =====
 R = 8.314462618  # J/(mol·K)

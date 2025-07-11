@@ -118,15 +118,12 @@ class EOSBase:
 
 
     def fugacity_coeff(self, x: List[float], phase: str = 'vapor') -> list:
+        
         x = np.array(x)
-        a_mix = np.sum(np.outer(x, x) * np.sqrt(np.outer(self.a_i, self.a_i)))
-        b_mix = np.dot(x, self.b_i)
-
-        A = a_mix * self.P / (self.R**2 * self.T**2)
-        B = b_mix * self.P / (self.R * self.T)
+        a_mix, b_mix, A, B = self.get_mixture_parameters(x)
         Z = self.calc_Z_factor(A, B, phase)
 
-        sqrt_ai = np.sqrt(self.a_i)
+        #sqrt_ai = np.sqrt(self.a_i)
         phi = []
 
         for i in range(len(x)):
@@ -142,13 +139,30 @@ class EOSBase:
         return np.array(phi)
 
     
-    def get_pressure_with_Z(self, v_molar: float, phase: str = 'vapor') -> float:
-        z = np.array([comp.fraction for comp in self.components])
-        a_mix = np.sum(np.outer(z, z) * np.sqrt(np.outer(self.a_i, self.a_i)))
-        b_mix = np.dot(z, self.b_i)
+    def get_pressure(self, v_molar: float, phase: str = 'vapor') -> float: 
+        a_mix, b_mix, _, _ = self.get_mixture_parameters()
+
+        T = self.T
+        R = self.R
+
+        num1 = R * T
+        denom1 = v_molar - b_mix
+
+        num2 = a_mix
+        denom2 = v_molar ** 2 + 2 * v_molar * b_mix - b_mix ** 2
+
+        P = num1 / denom1 - num2 / denom2
+        return P
+
+    
+    def get_mixture_parameters(self, composition: np.ndarray = None) -> Tuple[float, float, float, float]:
+        if composition is None:
+            composition = np.array([comp.fraction for comp in self.components])
+        
+        a_mix = np.sum(np.outer(composition, composition) * np.sqrt(np.outer(self.a_i, self.a_i)))
+        b_mix = np.dot(composition, self.b_i)
 
         A = a_mix * self.P / (self.R ** 2 * self.T ** 2)
         B = b_mix * self.P / (self.R * self.T)
 
-        Z = self.calc_Z_factor(A, B, phase)
-        return Z * self.R * self.T / v_molar
+        return a_mix, b_mix, A, B

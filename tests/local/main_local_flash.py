@@ -20,7 +20,7 @@ print("sys.path:", sys.path)
 import eos_cpp 
 
 #u bin imas pyd file, to je dll sa zvanje iz cpp
-cplusplus = True
+cplusplus = False
 
 def check_total_fraction(data, label):
     total = sum(comp["fraction"] for comp in data["components"])
@@ -52,17 +52,17 @@ def convert_to_cpp_components(py_components):
 
 #check_total_fraction(ComponentData.data_oxyfuel_comp1, "Oxyfuel Comp 1")
 #check_total_fraction(ComponentData.data_oxyfuel_comp2, "Oxyfuel Comp 2")
-check_total_fraction(ComponentData.data_example_flow_loop, "data_example_flow_loop_2step")
+check_total_fraction(ComponentData.data_example_flow_loop, "data_oxyfuel_comp1")
 
-temperatures = np.arange(280, 370, 1)  
-pressures = np.arange(1, 111, 1)      
+temperatures = np.arange(250, 300, 1)  
+pressures = np.arange(1, 100, 1)      
 results = pd.DataFrame(index=pressures, columns=temperatures)
 resultsIteration = pd.DataFrame(index=pressures, columns=temperatures)
 
 
 components = []
 
-for comp in ComponentData.data_example_flow_loop_2step["components"]:
+for comp in ComponentData.data_oxyfuel_comp1["components"]:
     component = Component(
         name=comp["name"],
         formula=comp["formula"],
@@ -147,7 +147,7 @@ ax = sns.heatmap(
     cbar=True,
     cbar_kws={'label': '[V]'},
     xticklabels=10,
-    yticklabels=False  # isključimo automatske y tick labele
+    yticklabels=False 
 )
 
 # ➕ Postavi y tickove ručno na svaki 10 bar (npr. 30, 40, ..., 90)

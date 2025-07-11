@@ -10,8 +10,8 @@ import pandas as pd
 # ===== GENERALNE STVARI ZA SAD =====
 R = 8.314462618  # J/(mol·K)
 V_LOOP = 0.05  # m3
-P_target_bar=40
-T_target_C=40
+P_target_bar=60
+T_target_C=60
 P_init_bar=1.1
 T_init_C=20
 dosing_volume_liters=10
@@ -130,7 +130,7 @@ def calculate_pressure_from_eos(df_input, T_K, V_m3):
     # Phase = RachfordRice.return_phase()
     #if....
     #else...
-    p_real = eos.get_pressure_with_Z(v_molar, phase='vapor')
+    p_real = eos.get_pressure(v_molar, phase='vapor')
     return p_real
 
 
