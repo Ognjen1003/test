@@ -12,7 +12,7 @@ R = 8.314462618  # J/(mol·K)
 V_LOOP = 0.05  # m3
 P_target_bar=40
 T_target_C=40
-P_init_bar=1.1
+P_init_bar=2.2
 T_init_C=20
 dosing_volume_liters=10
 
@@ -136,37 +136,59 @@ def calculate_pressure_from_eos(df_input, T_K, V_m3):
 
 if __name__ == "__main__":
     
-    print("\n================ UKUPNI ZBROJEVI ================")
-    df = calculate_charging()
-    print(df)
 
-    total_coolprop = df["V_CoolProp [L]"].astype(float).sum()
-    total_target = pd.to_numeric(df["V_target"], errors='coerce').sum()
+   P_target = P_target_bar * 1e5
+   T_target = T_target_C + 273.15
+   P_init = P_init_bar * 1e5
+   T_init = T_init_C + 273.15
 
-    print(f"Ukupan volumen pri početnim uvjetima (CoolProp): {total_coolprop:.2f} L")
-    print(f"Ukupan cilj. volumen pri {P_target_bar} bara i {T_target_C}°C (CoolProp): {total_target:.2f} L")
-    print("====================================================")
+   n_total = P_target * V_LOOP / (R * T_target)
+   rho_molar = PropsSI("Dmolar", "T", T_init, "P", P_init, "CarbonDioxide")  # mol/m3
+   v_coolprop = 1 / rho_molar  # m3/mol
+   v_coolprop_litre_po_molu = v_coolprop * 1000 # l/mol
 
-    
-    print(f"\n=========== NORMALIZIRANO NA {V_LOOP} ===========")
-    df_normalized = normalize_mols_to_volume(df, target_volume_liters=50)
-    print(df_normalized)
+   n_CO2 = 0.91 * n_total  
 
-    total_coolprop = df_normalized["V_CoolProp [L]"].astype(float).sum()
-    total_target = pd.to_numeric(df_normalized["V_target"], errors='coerce').sum()
+   n_molova_iz_coolpropa = V_LOOP / v_coolprop
 
-    print(f"Ukupan volumen pri početnim uvjetima (CoolProp): {total_coolprop:.2f} L")
-    print(f"Ukupan cilj. volumen pri {P_target_bar} bara i {T_target_C}°C (CoolProp): {total_target:.2f} L")
-    print("=====================================================")
+   print(f"n_total: {n_total}")    
+   print(f"n_CO2: {n_CO2}")  
+   print(f"v_coolprop_litre_po_molu: {v_coolprop_litre_po_molu}")  # molarni volumen pri tim uvjetima u litrama
+   print(f"n_molova_iz_coolpropa: {n_molova_iz_coolpropa}")
 
-    print("\n============= PENG-ROBINSON EOS TLAK ==============")
-    T_K = T_target_C + 273.15
-    pressure_real = calculate_pressure_from_eos(df, T_K, V_LOOP)
-    print(f"PR EOS tlak za V={V_LOOP} m3 i T={T_target_C}°C: {pressure_real / 1e5:.2f} bara")
-    print("=====================================================")
 
-    print(f"\n============= PENG-ROBINSON EOS TLAK ALI NORMALIZED za {V_LOOP} m3 ==============")
-    T_K = T_target_C + 273.15
-    pressure_real = calculate_pressure_from_eos(df_normalized, T_K, V_LOOP)
-    print(f"PR EOS tlak za V={V_LOOP} m3 i T={T_target_C}°C: {pressure_real / 1e5:.2f} bara")
-    print("=====================================================")
+# ================ UKUPNI ZBROJEVI ================
+# ================================= m3, Pa i K =================================
+# V_LOOP: 0.05
+# P_init: 110000.00000000001, T_init: 293.15
+# P_target: 4000000.0, T_target: 313.15
+# ==============================================================================
+# n_total molovi u idealnom slucaju pv=nRT: 76.81453300012309
+#        Component  Mol [mol]  V_ideal [L]  V_CoolProp [L]     Doses   V_target  Doses adjusted
+# 0  CarbonDioxide    69.9012  1548.874300     1539.907300  154.8874  36.729000          3.6729
+# 1       Nitrogen     3.0726    68.082400       68.064800    6.8082   2.000000          0.2000
+# 2          Argon     0.2304     5.106200        5.102400    0.5106   0.147400          0.0147
+# 3          Water     0.1536     0.000003        0.000003    0.0000   0.000003          0.0000
+# 4  SulfurDioxide     3.4567    76.592700       75.089500    7.6593   0.166200          0.0166
+# Ukupan volumen pri početnim uvjetima (CoolProp): 1688.16 L
+# Ukupan cilj. volumen pri 40 bara i 40°C (CoolProp): 39.04 L
+# ====================================================
+
+# =========== NORMALIZIRANO NA 0.05 ===========
+#        Component  Mol [mol]  V_ideal [L]  V_CoolProp [L]       Doses   V_target  Doses adjusted
+# 0  CarbonDioxide  89.519134  1983.569473     1972.085864  198.356909  47.037079        4.703708
+# 1       Nitrogen   3.934932    87.189884       87.167344    8.718937   2.561305        0.256130
+# 2          Argon   0.295062     6.539267        6.534400    0.653901   0.188768        0.018826
+# 3          Water   0.196708     0.000004        0.000004    0.000000   0.000004        0.000000
+# 4  SulfurDioxide   4.426831    98.088619       96.163543    9.808900   0.212844        0.021259
+# Ukupan volumen pri početnim uvjetima (CoolProp): 2161.95 L
+# Ukupan cilj. volumen pri 40 bara i 40°C (CoolProp): 50.00 L
+# =====================================================
+
+# ============= PENG-ROBINSON EOS TLAK ==============
+# PR EOS tlak za V=0.05 m3 i T=40°C: 39.81 bara
+# =====================================================
+
+# ============= PENG-ROBINSON EOS TLAK ALI NORMALIZED za 0.05 m3 ==============
+# PR EOS tlak za V=0.05 m3 i T=40°C: 50.98 bara
+# =====================================================

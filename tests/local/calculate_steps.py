@@ -4,7 +4,7 @@ import pprint
 
 # Inicijalizacija modela s podacima
 input_data = FlowInputModel()
-input_data.nsteps = 3
+input_data.nsteps = 2
 input_data.L = 40000
 input_data.d_in = 0.315925
 input_data.e = 0.0001

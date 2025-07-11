@@ -20,7 +20,7 @@ print("sys.path:", sys.path)
 import eos_cpp 
 
 #u bin imas pyd file, to je dll sa zvanje iz cpp
-cplusplus = False
+cplusplus = True
 
 def check_total_fraction(data, label):
     total = sum(comp["fraction"] for comp in data["components"])
@@ -50,19 +50,19 @@ def convert_to_cpp_components(py_components):
     return cpp_list     
 
 
-check_total_fraction(ComponentData.data_oxyfuel_comp1, "Oxyfuel Comp 1")
-check_total_fraction(ComponentData.data_oxyfuel_comp2, "Oxyfuel Comp 2")
-check_total_fraction(ComponentData.data_oxyfuel_comp3, "Oxyfuel Comp 3")
+#check_total_fraction(ComponentData.data_oxyfuel_comp1, "Oxyfuel Comp 1")
+#check_total_fraction(ComponentData.data_oxyfuel_comp2, "Oxyfuel Comp 2")
+check_total_fraction(ComponentData.data_example_flow_loop, "data_example_flow_loop_2step")
 
-temperatures = np.arange(271, 296, 1)  
-pressures = np.arange(40, 100, 1)      
+temperatures = np.arange(280, 370, 1)  
+pressures = np.arange(1, 111, 1)      
 results = pd.DataFrame(index=pressures, columns=temperatures)
 resultsIteration = pd.DataFrame(index=pressures, columns=temperatures)
 
 
 components = []
 
-for comp in ComponentData.data_oxyfuel_comp1["components"]:
+for comp in ComponentData.data_example_flow_loop_2step["components"]:
     component = Component(
         name=comp["name"],
         formula=comp["formula"],
@@ -77,6 +77,8 @@ for comp in ComponentData.data_oxyfuel_comp1["components"]:
         CpD=comp["CpD"]
     )
     components.append(component)
+
+
 
 
 start_time = time.time() 
@@ -121,8 +123,8 @@ else:
 end_time = time.time()  # Kraj mjerenja
 elapsed_time = end_time - start_time
 
-print(results)
-print(resultsIteration)
+#print(results)
+#print(resultsIteration)
 #results.to_csv("results3.xlsx")
 #resultsIteration.to_csv("resultsIT.xlsx")
 
@@ -144,39 +146,38 @@ ax = sns.heatmap(
     cmap=custom_cmap,
     cbar=True,
     cbar_kws={'label': '[V]'},
-    xticklabels=1,
-    yticklabels=1
+    xticklabels=10,
+    yticklabels=False  # isključimo automatske y tick labele
 )
 
+# ➕ Postavi y tickove ručno na svaki 10 bar (npr. 30, 40, ..., 90)
+pressures_rounded = pressures.round(1)  # ako imaš 30.0, 30.1, ...
+tick_values = list(range(int(pressures[0]), int(pressures[-1])+1, 10))  # 30, 40, ...
+tick_indices = [np.abs(pressures_rounded - val).argmin() for val in tick_values]  # indeksi najbliži traženim vrijednostima
+ax.set_yticks(tick_indices)
+ax.set_yticklabels(tick_values)
 
-sns.heatmap(
-    results_float.where((results_float == 0) | (results_float == 1)),
-    cmap=cmap_combined,
-    norm=norm,
-    cbar=False,
-    xticklabels=1,
-    yticklabels=1
-)
+# Isto možeš napraviti i za x-tickove ako želiš cijele temperature
+temperatures_rounded = temperatures.round(1)
+x_tick_values = list(range(int(temperatures[0]), int(temperatures[-1])+1, 5))
+x_tick_indices = [np.abs(temperatures_rounded - val).argmin() for val in x_tick_values]
+ax.set_xticks(x_tick_indices)
+ax.set_xticklabels(x_tick_values, rotation=45)
 
-
+# Ostale opcije za stil
 plt.gcf().patch.set_facecolor('#f0f0f0')
 plt.gca().set_facecolor('#f0f0f0')
 plt.gca().invert_yaxis()
 
-
 plt.xlabel("Temperatura [K]")
 plt.ylabel("Tlak [bar]")
-plt.title("OxyFuel 85% CO2")
-
-
-#black_patch = mpatches.Patch(color='black', label='1 faza')
-#white_patch = mpatches.Patch(color='white', label='1 faza')
-#plt.legend(handles=[black_patch, white_patch], loc='upper left', title='Jednofazna podrucja')
+plt.title("Flow-loop 2nd step N2")
 
 print(f"Vrijeme : {elapsed_time:.5f} sek")
 
 plt.tight_layout()
 plt.show()
+
 
 
 

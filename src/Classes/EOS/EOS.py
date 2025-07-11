@@ -101,13 +101,20 @@ class EOSBase:
         """
         coeffs = self.get_coefficients(A, B)
         roots = self.solve_cubic(coeffs)
+
+        if not roots:
+            raise ValueError(
+                f"No real roots found in calc_Z_factor. "
+                f"A={A:.5e}, B={B:.5e}, coeffs={coeffs}, phase='{phase}', "
+                f"T={self.T}, P={self.P}. Check EOS parameters or system conditions."
+            )
         
         if phase == 'vapor':
             self.Zv = max(roots)
         else:
             self.Zl = min(roots)
 
-        return max(roots) if phase == 'vapor' else min(roots)
+        return self.Zv if phase == 'vapor' else self.Zl
 
 
     def fugacity_coeff(self, x: List[float], phase: str = 'vapor') -> list:

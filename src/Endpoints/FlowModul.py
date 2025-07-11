@@ -5,6 +5,7 @@ from src.Classes.Flow.Flow import Flow
 from src.Classes.Flow.LookupTableSingleton import LookupTableSingleton 
 import sys
 import os
+import json
 
 warnings.filterwarnings("ignore")
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
@@ -46,7 +47,10 @@ def calculate_steps(steps: int, length: int, d_in: float, e: float, p: float, tK
     print(f'end {datetime.datetime.now().strftime(TIMEFORMAT)}') 
     
     data_dict = dfi.to_dict(orient='records')  # 'records' makes a list of dictionaries
-    return data_dict
+
+    #zbog ScriptManagera, promijenit u main.py kad tad    
+    #return data_dict
+    return json.dumps(data_dict)
 
 def check_case(case: str):
     valid_cases = ["case1", "case2", "case3", "CO2"]
