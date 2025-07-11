@@ -152,6 +152,7 @@ class EOSBase:
         denom2 = v_molar ** 2 + 2 * v_molar * b_mix - b_mix ** 2
 
         P = num1 / denom1 - num2 / denom2
+
         return P
 
     

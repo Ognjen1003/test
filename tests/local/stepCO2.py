@@ -8,12 +8,13 @@ from CoolProp.CoolProp import PropsSI
 import pandas as pd
 from CoolProp.CoolProp import AbstractState
 import numpy as np
+from data.testData import ComponentData
 
 # ===== GENERALNE STVARI ZA SAD =====
 R = 8.314462618  # J/(mol·K)
 V_LOOP = 0.05  # m3
-P_target_bar=40
-T_target_C=40
+P_target_bar=60
+T_target_C=60
 P_init_bar=2.2
 T_init_C=20
 dosing_volume_liters=10
@@ -139,25 +140,141 @@ def calculate_pressure_from_eos(df_input, T_K, V_m3):
 if __name__ == "__main__":
     
 
-   P_target = P_target_bar * 1e5
+   #P_target = P_target_bar * 1e5
    T_target = T_target_C + 273.15
    P_init = P_init_bar * 1e5
    T_init = T_init_C + 273.15
 
-   n_total = P_target * V_LOOP / (R * T_target)
+   #n_total = P_target * V_LOOP / (R * T_target)
+
+
+   print("==================================== PRVI KORAK ===========================================")
+   print("================================== CO2 na 2.2 bara ========================================")
    rho_molar = PropsSI("Dmolar", "T", T_init, "P", P_init, "CarbonDioxide")  # mol/m3
-   v_coolprop = 1 / rho_molar  # m3/mol
-   v_coolprop_litre_po_molu = v_coolprop * 1000 # l/mol
+   n_molova_iz_coolpropa = rho_molar * V_LOOP
 
-   n_CO2 = 0.91 * n_total  
-
-   n_molova_iz_coolpropa = V_LOOP / v_coolprop
-
-   print(f"n_total: {n_total}")    
-   print(f"n_CO2: {n_CO2}")  
-   print(f"v_coolprop_litre_po_molu: {v_coolprop_litre_po_molu}")  # molarni volumen pri tim uvjetima u litrama
    print(f"n_molova_iz_coolpropa: {n_molova_iz_coolpropa}")
 
+
+
+
+   print("==================================== DRUGI KORAK ===========================================")
+   print("======================================== SO2 ===============================================")
+   components = []
+
+   for comp in ComponentData.data_example_flow_loop_2step["components"]:
+        component = Component(
+            name=comp["name"],
+            formula=comp["formula"],
+            Mw=comp["Mw"],
+            Tc=comp["Tc"],
+            Pc=comp["Pc"] * 1e5,
+            omega=comp["omega"],
+            fraction=comp["fraction"],
+            CpA=comp["CpA"],
+            CpB=comp["CpB"],
+            CpC=comp["CpC"],
+            CpD=comp["CpD"]
+        )
+        components.append(component)
+
+   print("Zbroj frakcija:", sum([c.fraction for c in components]))
+
+   eos = PengRobinsonEOS(components, T=T_target, P=1e5)  
+   n_total = 11.128446
+   v_molar = V_LOOP / n_total  # m3/mol
+   p_real = eos.get_pressure(v_molar, phase='vapor')
+
+   print(f"p_real: {p_real / 1e5} na cca {T_target}K nakon dodavanja SO2")
+
+
+   print("==================================== TRECI KORAK ===========================================")
+   print("======================================= N2&Ar ==============================================")
+   components = []
+
+   for comp in ComponentData.data_example_flow_loop_3step["components"]:
+        component = Component(
+            name=comp["name"],
+            formula=comp["formula"],
+            Mw=comp["Mw"],
+            Tc=comp["Tc"],
+            Pc=comp["Pc"] * 1e5,
+            omega=comp["omega"],
+            fraction=comp["fraction"],
+            CpA=comp["CpA"],
+            CpB=comp["CpB"],
+            CpC=comp["CpC"],
+            CpD=comp["CpD"]
+        )
+        components.append(component)
+
+   print("Zbroj frakcija:", sum([c.fraction for c in components]))
+
+   eos = PengRobinsonEOS(components, T=T_target, P=1e5)  
+   n_total = 17.399096
+   v_molar = V_LOOP / n_total  # m3/mol
+   p_real = eos.get_pressure(v_molar, phase='vapor')
+
+   print(f"p_real: {p_real / 1e5} na cca {T_target}K nakon dodtka N2 i Ar")
+
+
+   print("==================================== CETVRTI KORAK ===========================================")
+   print("=================================== CO2 - 20 molova ==========================================")
+   components = []
+
+   for comp in ComponentData.data_example_flow_loop_3step["components"]:
+        component = Component(
+            name=comp["name"],
+            formula=comp["formula"],
+            Mw=comp["Mw"],
+            Tc=comp["Tc"],
+            Pc=comp["Pc"] * 1e5,
+            omega=comp["omega"],
+            fraction=comp["fraction"],
+            CpA=comp["CpA"],
+            CpB=comp["CpB"],
+            CpC=comp["CpC"],
+            CpD=comp["CpD"]
+        )
+        components.append(component)
+
+   print("Zbroj frakcija:", sum([c.fraction for c in components]))
+
+   eos = PengRobinsonEOS(components, T=T_target, P=1e5)  
+   n_total = 37.399096
+   v_molar = V_LOOP / n_total  # m3/mol
+   p_real = eos.get_pressure(v_molar, phase='vapor')
+
+   print(f"p_real: {p_real / 1e5} na cca {T_target}K nakon dodtka N2 i Ar") 
+
+   print("==================================== CETVRTI KORAK ===========================================")
+   print("================================== CO2 - jos 30 molova =======================================")
+   components = []
+
+   for comp in ComponentData.data_example_flow_loop_3step["components"]:
+        component = Component(
+            name=comp["name"],
+            formula=comp["formula"],
+            Mw=comp["Mw"],
+            Tc=comp["Tc"],
+            Pc=comp["Pc"] * 1e5,
+            omega=comp["omega"],
+            fraction=comp["fraction"],
+            CpA=comp["CpA"],
+            CpB=comp["CpB"],
+            CpC=comp["CpC"],
+            CpD=comp["CpD"]
+        )
+        components.append(component)
+
+   print("Zbroj frakcija:", sum([c.fraction for c in components]))
+
+   eos = PengRobinsonEOS(components, T=T_target, P=1e5)  
+   n_total = 67.399096
+   v_molar = V_LOOP / n_total  # m3/mol
+   p_real = eos.get_pressure(v_molar, phase='vapor')
+
+   print(f"p_real: {p_real / 1e5} na cca {T_target}K nakon dodtka N2 i Ar") 
 
 # ================ UKUPNI ZBROJEVI ================
 # ================================= m3, Pa i K =================================
@@ -194,3 +311,11 @@ if __name__ == "__main__":
 # ============= PENG-ROBINSON EOS TLAK ALI NORMALIZED za 0.05 m3 ==============
 # PR EOS tlak za V=0.05 m3 i T=40°C: 50.98 bara
 # =====================================================
+
+
+#4.56615   0.411
+#6.562296  0.589
+
+#11.128446
+
+# pv = nrt => p = nrt/V

@@ -20,7 +20,7 @@ print("sys.path:", sys.path)
 import eos_cpp 
 
 #u bin imas pyd file, to je dll sa zvanje iz cpp
-cplusplus = False
+cplusplus = True
 
 def check_total_fraction(data, label):
     total = sum(comp["fraction"] for comp in data["components"])
@@ -52,17 +52,17 @@ def convert_to_cpp_components(py_components):
 
 #check_total_fraction(ComponentData.data_oxyfuel_comp1, "Oxyfuel Comp 1")
 #check_total_fraction(ComponentData.data_oxyfuel_comp2, "Oxyfuel Comp 2")
-check_total_fraction(ComponentData.data_example_flow_loop, "data_oxyfuel_comp1")
+check_total_fraction(ComponentData.data_example_flow_loop, "data_example_flow_loop_4step_30_moles_of_CO2")
 
-temperatures = np.arange(250, 300, 1)  
-pressures = np.arange(1, 100, 1)      
+temperatures = np.arange(280, 340, 0.1)  
+pressures = np.arange(1, 160, 0.1)      
 results = pd.DataFrame(index=pressures, columns=temperatures)
 resultsIteration = pd.DataFrame(index=pressures, columns=temperatures)
 
 
 components = []
 
-for comp in ComponentData.data_oxyfuel_comp1["components"]:
+for comp in ComponentData.data_example_flow_loop_4step_30_moles_of_CO2["components"]:
     component = Component(
         name=comp["name"],
         formula=comp["formula"],
@@ -171,7 +171,7 @@ plt.gca().invert_yaxis()
 
 plt.xlabel("Temperatura [K]")
 plt.ylabel("Tlak [bar]")
-plt.title("Flow-loop 2nd step N2")
+plt.title("Flow-loop 4th step CO2 jos 30 moles na to")
 
 print(f"Vrijeme : {elapsed_time:.5f} sek")
 
