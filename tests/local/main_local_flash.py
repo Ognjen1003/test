@@ -54,15 +54,15 @@ def convert_to_cpp_components(py_components):
 #check_total_fraction(ComponentData.data_oxyfuel_comp2, "Oxyfuel Comp 2")
 check_total_fraction(ComponentData.data_example_flow_loop, "data_example_flow_loop_4step_30_moles_of_CO2")
 
-temperatures = np.arange(280, 340, 0.1)  
-pressures = np.arange(1, 160, 0.1)      
+temperatures = np.arange(170, 260, 1)  
+pressures = np.arange(1, 60, 1)      
 results = pd.DataFrame(index=pressures, columns=temperatures)
 resultsIteration = pd.DataFrame(index=pressures, columns=temperatures)
 
 
 components = []
 
-for comp in ComponentData.data_example_flow_loop_4step_30_moles_of_CO2["components"]:
+for comp in ComponentData.data_Domagoj_3_ujutro["components"]:
     component = Component(
         name=comp["name"],
         formula=comp["formula"],

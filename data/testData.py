@@ -937,3 +937,37 @@ class ComponentData:
             }
         ]
     }
+
+
+
+
+    data_Domagoj_3_ujutro = {
+        "components": [
+            {
+                "name": "Carbon Dioxide",
+                "formula": "CO2",
+                "Mw": 44.010,
+                "Tc": 304.7,
+                "Pc": 73.866,
+                "omega": 0.225,
+                "fraction": 0.4,
+                "CpA": 22.26,
+                "CpB": 5.981e-3,
+                "CpC": -3.501e-6,
+                "CpD": 7469.0,
+            },
+            {
+                "name": "Ethane",
+                "formula": "C2",
+                "Mw": 30.070,
+                "Tc": 305.43,
+                "Pc": 48.839,
+                "omega": 0.0986,
+                "fraction": 0.6,
+                "CpA": 21.13,
+                "CpB": 78.60e-3,
+                "CpC": -11.85e-6,
+                "CpD": 18.99e-9,
+            }
+        ]
+    }
