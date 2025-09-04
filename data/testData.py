@@ -1,6 +1,9 @@
+from typing import ClassVar, List
+from Models.Component import Component
+
 class ComponentData:
     
-    data = {
+    _data = {
         "components": [
             {
                 "name": "Nitrogen",
@@ -148,8 +151,7 @@ class ComponentData:
         ]
     }
 
-
-    data_oxyfuel_comp1 = {
+    _data_oxyfuel_comp1 = {
         "components": [
             {
                 "name": "CO2",
@@ -284,7 +286,7 @@ class ComponentData:
         ]
     }
 
-    data_oxyfuel_comp2 = {
+    _data_oxyfuel_comp2 = {
         "components": [
             {
                 "name": "CO2",
@@ -419,7 +421,7 @@ class ComponentData:
         ]
     }
 
-    data_oxyfuel_comp3 = {
+    _data_oxyfuel_comp3 = {
         "components": [
             {
                 "name": "CO2",
@@ -555,8 +557,7 @@ class ComponentData:
     }
 
 
-
-    data_example_flow_loop = {
+    _data_example_flow_loop = {
         "components": [
             {
                 "name": "CarbonDioxide",
@@ -627,7 +628,7 @@ class ComponentData:
     }
     
 
-    data_example_flow_loop_CO2_20_1step_2_2_bara_P_init = {
+    _data_example_flow_loop_CO2_20_1step_2_2_bara_P_init = {
         "components": [
             {
                 "name": "CarbonDioxide", 
@@ -697,7 +698,7 @@ class ComponentData:
         ]
     }
 
-    data_example_flow_loop_2step = {
+    _data_example_flow_loop_2step = {
         "components": [
             {
                 "name": "CarbonDioxide", 
@@ -728,7 +729,7 @@ class ComponentData:
         ]
     }
     
-    data_example_flow_loop_3step = {
+    _data_example_flow_loop_3step = {
         "components": [
             {
                 "name": "CarbonDioxide", 
@@ -798,7 +799,7 @@ class ComponentData:
         ]
     }
     
-    data_example_flow_loop_4step_20_moles_of_CO2= {
+    _data_example_flow_loop_4step_20_moles_of_CO2= {
         "components": [
             {
                 "name": "CarbonDioxide", 
@@ -868,7 +869,7 @@ class ComponentData:
         ]
     }
     
-    data_example_flow_loop_4step_30_moles_of_CO2 = {
+    _data_example_flow_loop_4step_30_moles_of_CO2 = {
         "components": [
             {
                 "name": "CarbonDioxide", 
@@ -938,10 +939,7 @@ class ComponentData:
         ]
     }
 
-
-
-
-    data_Domagoj_3_ujutro = {
+    _data_Domagoj_3_ujutro = {
         "components": [
             {
                 "name": "Carbon Dioxide",
@@ -971,3 +969,22 @@ class ComponentData:
             }
         ]
     }
+
+
+    data_components: ClassVar[List[Component]] = [Component(**c) for c in _data["components"]]
+    oxyfuel_comp1: ClassVar[List[Component]] = [Component(**c) for c in _data_oxyfuel_comp1["components"]]
+    oxyfuel_comp2: ClassVar[List[Component]] = [Component(**c) for c in _data_oxyfuel_comp2["components"]]
+    oxyfuel_comp3: ClassVar[List[Component]] = [Component(**c) for c in _data_oxyfuel_comp3["components"]]
+    example_flow_loop: ClassVar[List[Component]] = [Component(**c) for c in _data_example_flow_loop["components"]]
+    example_flow_loop_CO2_20_1step_2_2_bara_P_init: ClassVar[List[Component]] = [
+        Component(**c) for c in _data_example_flow_loop_CO2_20_1step_2_2_bara_P_init["components"]
+    ]
+    example_flow_loop_2step: ClassVar[List[Component]] = [Component(**c) for c in _data_example_flow_loop_2step["components"]]
+    example_flow_loop_3step: ClassVar[List[Component]] = [Component(**c) for c in _data_example_flow_loop_3step["components"]]
+    example_flow_loop_4step_20_moles_of_CO2: ClassVar[List[Component]] = [
+        Component(**c) for c in _data_example_flow_loop_4step_20_moles_of_CO2["components"]
+    ]
+    example_flow_loop_4step_30_moles_of_CO2: ClassVar[List[Component]] = [
+        Component(**c) for c in _data_example_flow_loop_4step_30_moles_of_CO2["components"]
+    ]
+    Domagoj_3_ujutro: ClassVar[List[Component]] = [Component(**c) for c in _data_Domagoj_3_ujutro["components"]]

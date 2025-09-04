@@ -12,3 +12,8 @@ class Phase(str, Enum):
     Vapor = "Vapor"
     Liquid = "Liquid"
     Vapor_Liquid = "Vapor_Liquid"
+
+class CASES(str, Enum):
+    CASE1 = "CASE1"
+    PVT = "PVT"
+    CO2 = "CO2"

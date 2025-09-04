@@ -1,5 +1,9 @@
 from src.Endpoints.FlowModul import calculate_steps
 from src.Models.FlowModels import FlowInputModel
+from data.testData import ComponentData
+from Models.Component import Component
+from src.Classes import UtilClass
+import json
 import pprint  
 
 # Inicijalizacija modela s podacima
@@ -8,11 +12,18 @@ input_data.nsteps = 2
 input_data.L = 40000
 input_data.d_in = 0.315925
 input_data.e = 0.0001
-input_data.p = 4000000
+input_data.p = 40000
 input_data.T = 293.15
 input_data.qm = 23.75
-input_data.case = "case1"
+input_data.case = "pvt"
 input_data.visual = 0  # ako je dio modela
+
+
+title_primer = "oxyfuel_comp2"  # za prikaz vise, nije elementarno
+data_source = ComponentData.oxyfuel_comp2 # podaci koji se actually prikazuju  
+
+UtilClass.check_total_fraction(data_source, title_primer)
+
 
 # Poziv funkcije
 result = calculate_steps(
@@ -23,11 +34,14 @@ result = calculate_steps(
     p=input_data.p,
     tK=input_data.T,
     qm=input_data.qm,
-    case=input_data.case
+    case=input_data.case,
+    composition=data_source
 )
 
 # Ispis rezultata
 print("\n=== Rezultati izračuna ===")
-for i, row in enumerate(result):
-    print(f"\nStep {i+1}:")
-    pprint.pprint(row)
+data = json.loads(result)
+# ispis po stepovima
+for item in data:
+    print(f"\nStep {item['step']}:")
+    pprint.pprint(item)

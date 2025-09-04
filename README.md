@@ -11,7 +11,7 @@ virtualno okruzenje
     deactivate     
 
 pip
-    pip show library
+    pip show _library_
     pip list
     pip install -r requirements.txt
 
@@ -21,7 +21,7 @@ pokretanje servera
 pokretanje iz testova lokalno
     set PYTHONPATH=%cd%       # da ide na src folder, absolute path
     python -m tests.local.test_main_local
-    ali koristi .vscode launch.json
+    ----> ali koristi .vscode launch.json!!!
 
 CMake 
     otvoriti x64 Native Tools Command Prompt
@@ -31,7 +31,7 @@ CMake
     cmake .. -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release
     nmake
     ista verzija pythona kao i pyd....
-    ali sve to je u automat.bat-u u C++
+    ------> ali sve to je u automat.bat-u u C++!!!
 
 
 Svi importi su apsolutni, npr.:
