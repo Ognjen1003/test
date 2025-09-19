@@ -1,6 +1,9 @@
+from typing import ClassVar, List
+from Models.Component import Component
+
 class ComponentData:
     
-    data = {
+    _data = {
         "components": [
             {
                 "name": "Nitrogen",
@@ -148,7 +151,7 @@ class ComponentData:
         ]
     }
 
-    data_oxyfuel_comp1 = {
+    _data_oxyfuel_comp1 = {
         "components": [
             {
                 "name": "CO2",
@@ -170,7 +173,7 @@ class ComponentData:
                 "Tc": 154.6,
                 "Pc": 50.43,
                 "omega": 0.0222,
-                "fraction": 0.047,
+                "fraction": 0.0469,
                 "CpA": 29.10,
                 "CpB": 0,
                 "CpC": 0,
@@ -283,7 +286,7 @@ class ComponentData:
         ]
     }
 
-    data_oxyfuel_comp2 = {
+    _data_oxyfuel_comp2 = {
         "components": [
             {
                 "name": "CO2",
@@ -418,7 +421,7 @@ class ComponentData:
         ]
     }
 
-    data_oxyfuel_comp3 = {
+    _data_oxyfuel_comp3 = {
         "components": [
             {
                 "name": "CO2",
@@ -552,3 +555,436 @@ class ComponentData:
             },
         ]
     }
+
+
+    _data_example_flow_loop = {
+        "components": [
+            {
+                "name": "CarbonDioxide",
+                "formula": "CO2",
+                "Mw": 44.01,
+                "Tc": 304.7,
+                "Pc": 73.866,
+                "omega": 0.225,
+                "fraction": 0.91,
+                "CpA": 22.26,
+                "CpB": 5.981e-3,
+                "CpC": -3.501e-6,
+                "CpD": 7469.0,
+            },
+            {
+                "name": "Nitrogen",
+                "formula": "N2",
+                "Mw": 28.013,
+                "Tc": 126.2,
+                "Pc": 33.944,
+                "omega": 0.04,
+                "fraction": 0.04,
+                "CpA": 28.90,
+                "CpB": -0.0001571,
+                "CpC": 8.081e-7,
+                "CpD": 0.0,
+            },
+            {
+                "name": "Argon",
+                "formula": "Ar",
+                "Mw": 39.948,
+                "Tc": 150.8,
+                "Pc": 48.63,
+                "omega": -0.004,
+                "fraction": 0.003,
+                "CpA": 20.85,
+                "CpB": 0.0,
+                "CpC": 0.0,
+                "CpD": 0.0,
+            },
+            {
+                "name": "Water",
+                "formula": "H2O",
+                "Mw": 18.015,
+                "Tc": 647.1,
+                "Pc": 220.64,
+                "omega": 0.344,
+                "fraction": 0.002,
+                "CpA": 32.24,
+                "CpB": 0.0,
+                "CpC": 0.0,
+                "CpD": 0.0,
+            },
+            {
+                "name": "SulfurDioxide",
+                "formula": "SO2",
+                "Mw": 64.066,
+                "Tc": 430.8,
+                "Pc": 77.8,
+                "omega": 0.251,
+                "fraction": 0.045,
+                "CpA": 40.0,
+                "CpB": 0.0,
+                "CpC": 0.0,
+                "CpD": 0.0,
+            },
+        ]
+    }
+    
+
+    _data_example_flow_loop_CO2_20_1step_2_2_bara_P_init = {
+        "components": [
+            {
+                "name": "CarbonDioxide", 
+                "formula": "CO2", 
+                "Mw": 44.01, 
+                "Tc": 304.7, 
+                "Pc": 73.866, 
+                "omega": 0.225, 
+                "fraction": 0.3694, 
+                "CpA": 22.26, 
+                "CpB": 5.981e-3, 
+                "CpC": -3.501e-6, 
+                "CpD": 7469.0,
+            },
+            {
+                "name": "Nitrogen", 
+                "formula": "N2", 
+                "Mw": 28.013, 
+                "Tc": 126.2, 
+                "Pc": 33.944, 
+                "omega": 0.04, 
+                "fraction":  0.2487, 
+                "CpA": 28.90, 
+                "CpB": -0.0001571, 
+                "CpC": 8.081e-7, 
+                "CpD": 0.0,
+            },
+            {
+                "name": "Argon", 
+                "formula": "Ar", 
+                "Mw": 39.948, 
+                "Tc": 150.8, 
+                "Pc": 48.63, 
+                "omega": -0.004, 
+                "fraction": 0.0239, 
+                "CpA": 20.85, 
+                "CpB": 0.0, 
+                "CpC": 0.0, 
+                "CpD": 0.0,
+            },
+            {
+                "name": "Water", 
+                "formula": "H2O", 
+                "Mw": 18.015, 
+                "Tc": 647.1, 
+                "Pc": 220.64, 
+                "omega": 0.344, 
+                "fraction": 0, 
+                "CpA": 32.24, 
+                "CpB": 0.0, 
+                "CpC": 0.0, 
+                "CpD": 0.0,
+            },
+            {
+                "name": "SulfurDioxide", 
+                "formula": "SO2", 
+                "Mw": 64.066, 
+                "Tc": 430.8, 
+                "Pc": 77.8, 
+                "omega": 0.251, 
+                "fraction": 0.3580, 
+                "CpA": 40.0, 
+                "CpB": 0.0, 
+                "CpC": 0.0, 
+                "CpD": 0.0,
+            }
+        ]
+    }
+
+    _data_example_flow_loop_2step = {
+        "components": [
+            {
+                "name": "CarbonDioxide", 
+                "formula": "CO2", 
+                "Mw": 44.01, 
+                "Tc": 304.7, 
+                "Pc": 73.866, 
+                "omega": 0.225, 
+                "fraction": 0.411, 
+                "CpA": 22.26, 
+                "CpB": 5.981e-3, 
+                "CpC": -3.501e-6, 
+                "CpD": 7469.0,
+            },
+            {
+                "name": "SulfurDioxide", 
+                "formula": "SO2", 
+                "Mw": 64.066, 
+                "Tc": 430.8, 
+                "Pc": 77.8, 
+                "omega": 0.251, 
+                "fraction": 0.589, 
+                "CpA": 40.0, 
+                "CpB": 0.0, 
+                "CpC": 0.0, 
+                "CpD": 0.0,
+            }
+        ]
+    }
+    
+    _data_example_flow_loop_3step = {
+        "components": [
+            {
+                "name": "CarbonDioxide", 
+                "formula": "CO2", 
+                "Mw": 44.01, 
+                "Tc": 304.7, 
+                "Pc": 73.866, 
+                "omega": 0.225, 
+                "fraction": 0.2625, 
+                "CpA": 22.26, 
+                "CpB": 5.981e-3, 
+                "CpC": -3.501e-6, 
+                "CpD": 7469.0,
+            },
+            {
+                "name": "Nitrogen", 
+                "formula": "N2", 
+                "Mw": 28.013, 
+                "Tc": 126.2, 
+                "Pc": 33.944, 
+                "omega": 0.04, 
+                "fraction": 0.3352, 
+                "CpA": 28.90, 
+                "CpB": -0.0001571, 
+                "CpC": 8.081e-7, 
+                "CpD": 0.0,
+            },
+            {
+                "name": "Argon", 
+                "formula": "Ar", 
+                "Mw": 39.948, 
+                "Tc": 150.8, 
+                "Pc": 48.63, 
+                "omega": -0.004, 
+                "fraction": 0.0251, 
+                "CpA": 20.85, 
+                "CpB": 0.0, 
+                "CpC": 0.0, 
+                "CpD": 0.0,
+            },
+            {
+                "name": "Water", 
+                "formula": "H2O", 
+                "Mw": 18.015, 
+                "Tc": 647.1, 
+                "Pc": 220.64, 
+                "omega": 0.344, 
+                "fraction": 0, 
+                "CpA": 32.24, 
+                "CpB": 0.0, 
+                "CpC": 0.0, 
+                "CpD": 0.0,
+            },
+            {
+                "name": "SulfurDioxide", 
+                "formula": "SO2", 
+                "Mw": 64.066, 
+                "Tc": 430.8, 
+                "Pc": 77.8, 
+                "omega": 0.251, 
+                "fraction": 0.3773, 
+                "CpA": 40.0, 
+                "CpB": 0.0, 
+                "CpC": 0.0, 
+                "CpD": 0.0,
+            }
+        ]
+    }
+    
+    _data_example_flow_loop_4step_20_moles_of_CO2= {
+        "components": [
+            {
+                "name": "CarbonDioxide", 
+                "formula": "CO2", 
+                "Mw": 44.01, 
+                "Tc": 304.7, 
+                "Pc": 73.866, 
+                "omega": 0.225, 
+                "fraction": 0.6569, 
+                "CpA": 22.26, 
+                "CpB": 5.981e-3, 
+                "CpC": -3.501e-6, 
+                "CpD": 7469.0,
+            },
+            {
+                "name": "Nitrogen", 
+                "formula": "N2", 
+                "Mw": 28.013, 
+                "Tc": 126.2,
+                 "Pc": 33.944, 
+                 "omega": 0.04, 
+                 "fraction": 0.1559, 
+                 "CpA": 28.90, 
+                 "CpB": -0.0001571, 
+                 "CpC": 8.081e-7, 
+                 "CpD": 0.0,
+            },
+            {
+                "name": "Argon", 
+                "formula": "Ar", 
+                "Mw": 39.948, 
+                "Tc": 150.8, 
+                "Pc": 48.63, 
+                "omega": -0.004, 
+                "fraction": 0.0117, 
+                "CpA": 20.85, 
+                "CpB": 0.0, 
+                "CpC": 0.0, 
+                "CpD": 0.0,
+            },
+            {
+                "name": "Water",          
+                "formula": "H2O", 
+                "Mw": 18.015, 
+                "Tc": 647.1, 
+                "Pc": 220.64, 
+                "omega": 0.344, 
+                "fraction": 0, 
+                "CpA": 32.24, 
+                "CpB": 0.0, 
+                "CpC": 0.0, 
+                "CpD": 0.0,
+            },
+            {
+                "name": "SulfurDioxide", 
+                "formula": "SO2", 
+                "Mw": 64.066, 
+                "Tc": 430.8, 
+                "Pc": 77.8, 
+                "omega": 0.251, 
+                "fraction": 0.1755, 
+                "CpA": 40.0, 
+                "CpB": 0.0, 
+                "CpC": 0.0, 
+                "CpD": 0.0,
+            }
+        ]
+    }
+    
+    _data_example_flow_loop_4step_30_moles_of_CO2 = {
+        "components": [
+            {
+                "name": "CarbonDioxide", 
+                "formula": "CO2", 
+                "Mw": 44.01, 
+                "Tc": 304.7, 
+                "Pc": 73.866, 
+                "omega": 0.225, 
+                "fraction": 0.8096, 
+                "CpA": 22.26, 
+                "CpB": 5.981e-3, 
+                "CpC": -3.501e-6, 
+                "CpD": 7469.0,
+            },
+            {
+                "name": "Nitrogen", 
+                "formula": "N2", 
+                "Mw": 28.013, 
+                "Tc": 126.2, 
+                "Pc": 33.944, 
+                "omega": 0.04, 
+                "fraction": 0.0866, 
+                "CpA": 28.90, 
+                "CpB": -0.0001571, 
+                "CpC": 8.081e-7, 
+                "CpD": 0.0,
+            },
+            {
+                "name": "Argon", 
+                "formula": "Ar", 
+                "Mw": 39.948, 
+                "Tc": 150.8, 
+                "Pc": 48.63, 
+                "omega": -0.004, 
+                "fraction": 0.0065, 
+                "CpA": 20.85, 
+                "CpB": 0.0, 
+                "CpC": 0.0, 
+                "CpD": 0.0,
+            },
+            {
+                "name": "Water", 
+                "formula": "H2O", 
+                "Mw": 18.015, 
+                "Tc": 647.1, 
+                "Pc": 220.64, 
+                "omega": 0.344, 
+                "fraction": 0, 
+                "CpA": 32.24, 
+                "CpB": 0.0, 
+                "CpC": 0.0, 
+                "CpD": 0.0,
+            },
+            {
+                "name": "SulfurDioxide", 
+                "formula": "SO2", 
+                "Mw": 64.066, 
+                "Tc": 430.8, 
+                "Pc": 77.8, 
+                "omega": 0.251, 
+                "fraction": 0.0974, 
+                "CpA": 40.0, 
+                "CpB": 0.0, 
+                "CpC": 0.0, 
+                "CpD": 0.0,
+            }
+        ]
+    }
+
+    _data_Domagoj_3_ujutro = {
+        "components": [
+            {
+                "name": "Carbon Dioxide",
+                "formula": "CO2",
+                "Mw": 44.010,
+                "Tc": 304.7,
+                "Pc": 73.866,
+                "omega": 0.225,
+                "fraction": 0.4,
+                "CpA": 22.26,
+                "CpB": 5.981e-3,
+                "CpC": -3.501e-6,
+                "CpD": 7469.0,
+            },
+            {
+                "name": "Ethane",
+                "formula": "C2",
+                "Mw": 30.070,
+                "Tc": 305.43,
+                "Pc": 48.839,
+                "omega": 0.0986,
+                "fraction": 0.6,
+                "CpA": 21.13,
+                "CpB": 78.60e-3,
+                "CpC": -11.85e-6,
+                "CpD": 18.99e-9,
+            }
+        ]
+    }
+
+
+    data_components: ClassVar[List[Component]] = [Component(**c) for c in _data["components"]]
+    oxyfuel_comp1: ClassVar[List[Component]] = [Component(**c) for c in _data_oxyfuel_comp1["components"]]
+    oxyfuel_comp2: ClassVar[List[Component]] = [Component(**c) for c in _data_oxyfuel_comp2["components"]]
+    oxyfuel_comp3: ClassVar[List[Component]] = [Component(**c) for c in _data_oxyfuel_comp3["components"]]
+    example_flow_loop: ClassVar[List[Component]] = [Component(**c) for c in _data_example_flow_loop["components"]]
+    example_flow_loop_CO2_20_1step_2_2_bara_P_init: ClassVar[List[Component]] = [
+        Component(**c) for c in _data_example_flow_loop_CO2_20_1step_2_2_bara_P_init["components"]
+    ]
+    example_flow_loop_2step: ClassVar[List[Component]] = [Component(**c) for c in _data_example_flow_loop_2step["components"]]
+    example_flow_loop_3step: ClassVar[List[Component]] = [Component(**c) for c in _data_example_flow_loop_3step["components"]]
+    example_flow_loop_4step_20_moles_of_CO2: ClassVar[List[Component]] = [
+        Component(**c) for c in _data_example_flow_loop_4step_20_moles_of_CO2["components"]
+    ]
+    example_flow_loop_4step_30_moles_of_CO2: ClassVar[List[Component]] = [
+        Component(**c) for c in _data_example_flow_loop_4step_30_moles_of_CO2["components"]
+    ]
+    Domagoj_3_ujutro: ClassVar[List[Component]] = [Component(**c) for c in _data_Domagoj_3_ujutro["components"]]

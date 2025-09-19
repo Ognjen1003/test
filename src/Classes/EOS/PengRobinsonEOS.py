@@ -1,7 +1,8 @@
 import math
 from .EOS import EOSBase
-import src.Classes.Component as Component
+import Models.Component as Component
 from typing import List
+import numpy as np
 
 
 class PengRobinsonEOS(EOSBase):
@@ -12,7 +13,7 @@ class PengRobinsonEOS(EOSBase):
     def alpha(self, comp: Component) -> float:
         Tr = self.T / comp.Tc
         m = 0.37464 + 1.54226 * comp.omega - 0.26992 * comp.omega**2
-        return (1 + m * (1 - math.sqrt(Tr)))**2
+        return (1 + m * (1 - np.sqrt(Tr)))**2
 
     def a_formula(self, comp: Component) -> float:
         return 0.45724 * self.R**2 * comp.Tc**2 / comp.Pc

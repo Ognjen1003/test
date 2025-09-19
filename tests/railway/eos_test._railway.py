@@ -62,7 +62,10 @@ data = {
     ],
     "T": 320.0,
     "P": 50.0,
-    "eos_type": "PR",  # ➔ ili "SRK"
+    "eos_type": "PR",  # PR ili SRK
+    "method": "FSOLVE", #F SOLVE ili ROOT_SCALAR
+    "calculate_enthalpy": False
+
 }
 
 response = requests.post(url1, json=data)
