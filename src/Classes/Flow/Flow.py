@@ -8,8 +8,9 @@ from scipy.optimize import fsolve
 from scipy.interpolate import griddata
 import CoolProp.CoolProp as CP
 from numba import jit
-import sys
-import os
+import sys, os
+import src.Classes.Flow.Density as D
+
 
 bin_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..\\..', '..', 'bin'))
 sys.path.insert(0, bin_path)  # stavim ga kao prvi prioritet
@@ -87,13 +88,13 @@ class Flow:
 
 
     #@jit(forceobj=True)
-    def dp_table_combined(self, L, d_in, e, p1, T1, qm, case, nsteps=10, lookup_table=None):
+    def dp_table_combined(self, L, d_in, e, p1, T1, qm, case, nsteps=10, datasource=None):
         
         df_dp = pd.DataFrame(columns=['step', 'L', 'p1', 't', 'mu', 'rho_g', 'u', 'Re', 'ff', 'dp', 'p2'])
         A = 0.25*np.pi*d_in**2
 
         if case == CASES.CASE1:
-            points = lookup_table[['p', 't']].values
+            points = datasource[['p', 't']].values
 
         for i in range(nsteps):
             if case == CASES.CO2:
@@ -101,16 +102,28 @@ class Flow:
                 rho_gas = CP.PropsSI('D', 'T', T1, 'P', p1, 'CO2')
                 mu = CP.PropsSI('V', 'T', T1, 'P', p1, 'CO2')
             elif case == CASES.PVT:
-
-                result = perform_eos_calculation(lookup_table, T1, p1, EOSType.PR, SolveMethod.FSOLVE, False) 
+                composition = datasource
+                p1 = p1/10000
+                result = perform_eos_calculation(composition, T1, p1, EOSType.PR, SolveMethod.FSOLVE, True) 
                 
-                rho_gas = 0.1
+                print(f" =================== result: {result}  =================== ")
+                phase = result["V"]
+                Zv = result["Zv"]
+                Zl = result["Zl"]
+                             
+                if phase == -2 or phase == -3 or phase == 2:                        #tekuce
+                    rho = D.DensityClass.density_from_Z(composition, T1, p1*10000, Zl)
+                elif phase == -8 or phase == 9 or phase == 3:                       #plinovito
+                    rho = D.DensityClass.density_from_Z(composition, T1, p1*10000, Zv)
+
                 mu = 0.1
+                print(f"======================== rho = {rho} ========================")
                 
             elif case == CASES.CASE1:
                 # Standard lookup table logic (from dp_table)
-                rho_gas = griddata(points, lookup_table['rho_g'].values, (p1 / 1e5, T1 - 273.15), method='linear')
-                mu = griddata(points, lookup_table['mu_g'].values, (p1 / 1e5, T1 - 273.15), method='linear')
+                rho_gas = griddata(points, datasource['rho_g'].values, (p1 / 1e5, T1 - 273.15), method='linear')
+                print(f"======================== rho_gas = {rho_gas} ========================")
+                mu = griddata(points, datasource['mu_g'].values, (p1 / 1e5, T1 - 273.15), method='linear')
 
             # Common logic for both cases
             qv = qm / rho_gas

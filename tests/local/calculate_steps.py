@@ -1,26 +1,26 @@
 from src.Endpoints.FlowModul import calculate_steps
 from src.Models.FlowModels import FlowInputModel
 from data.testData import ComponentData
-from Models.Component import Component
 from src.Classes import UtilClass
+import src.EnumsClasses.MethodsAndTypes as MT
 import json
 import pprint  
 
 # Inicijalizacija modela s podacima
 input_data = FlowInputModel()
-input_data.nsteps = 2
+input_data.nsteps = 1
 input_data.L = 40000
 input_data.d_in = 0.315925
 input_data.e = 0.0001
-input_data.p = 40000
-input_data.T = 293.15
+input_data.p = 410000
+input_data.T = 275
 input_data.qm = 23.75
-input_data.case = "pvt"
+input_data.case = "case1"
 input_data.visual = 0  # ako je dio modela
 
 
-title_primer = "oxyfuel_comp2"  # za prikaz vise, nije elementarno
-data_source = ComponentData.oxyfuel_comp2 # podaci koji se actually prikazuju  
+title_primer = "oxyfuel_comp1"  # za prikaz vise, nije elementarno
+data_source = ComponentData.oxyfuel_comp1 # podaci koji se actually prikazuju  
 
 UtilClass.check_total_fraction(data_source, title_primer)
 
@@ -37,6 +37,7 @@ result = calculate_steps(
     case=input_data.case,
     composition=data_source
 )
+
 
 # Ispis rezultata
 print("\n=== Rezultati izračuna ===")

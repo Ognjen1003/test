@@ -127,7 +127,8 @@ def calculate_pressure_from_eos(df_input, T_K, V_m3):
     eos = PengRobinsonEOS(component_objs, T=T_K, P=1e5)  # dummy P, provjerit
     n_total = df_input["Mol [mol]"].sum()
     v_molar = V_m3 / n_total  # m3/mol
-    # Phase = RachfordRice.return_phase()
+    # pretpostavka da je ovo plin uvijek t da znam gdje sam u phase diagramu
+    # Phase = RachfordRice.return_phase()  
     #if....
     #else...
     p_real = eos.get_pressure(v_molar, phase='vapor')

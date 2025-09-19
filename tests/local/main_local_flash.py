@@ -19,16 +19,17 @@ import eos_cpp
 
 #u bin imas pyd file, to je dll sa zvanje iz cpp
 cplusplus = False
+display_iterations = False
+adjust_display_iterations = False
 
 # funkcije da izgleda urednije
-
 title_primer = "data_oxyfuel_comp1"  # za prikaz vise, nije elementarno
 components = ComponentData.oxyfuel_comp1 # podaci koji se actually prikazuju  
 
 UtilClass.check_total_fraction(components, title_primer)
 
-temperatures = np.arange(170, 380, 1)  
-pressures = np.arange(1, 90, 1)      
+temperatures = np.arange(150, 400, 1)  
+pressures = np.arange(1, 105, 1)      
 results = pd.DataFrame(index=pressures, columns=temperatures)
 resultsIteration = pd.DataFrame(index=pressures, columns=temperatures)
 
@@ -42,8 +43,6 @@ if cplusplus:
 
     for res in cpp_results:
         if res.P in results.index and res.T in results.columns:
-            if res.V == -1:
-                res.V = np.nan 
             results.at[res.P, res.T] = res.V
             resultsIteration.at[res.P, res.T] = res.iterations
 
@@ -56,27 +55,27 @@ else:
                 Pp,
                 EOSType.PR,            
                 SolveMethod.FSOLVE,
-                False
+                True
                 ) 
-            if result["V"] == -1.0:
-                results.at[Pp, Tt] = np.nan 
-                resultsIteration.at[Pp, Tt] = result["iteration"]
-            else:
-                results.at[Pp, Tt] = result["V"]
-                resultsIteration.at[Pp, Tt] = result["iteration"]
-                #print(f"{Tt} ---- {Pp}")
+            results.at[Pp, Tt] = result["V"]
+            resultsIteration.at[Pp, Tt] = result["iteration"]
+            #print(f"{Tt} ---- {Pp}")
 
 end_time = time.time()  # Kraj mjerenja
 elapsed_time = end_time - start_time
+print(f"Vrijeme : {elapsed_time:.5f} sek")
 
 #print(results)
 #print(resultsIteration)
 #results.to_csv("results3.xlsx")
 #resultsIteration.to_csv("resultsIT.xlsx")
 
-results_float = results.astype(float)
+if not display_iterations:
+    results_display = results.astype(float)
+else:
+    results_display = resultsIteration.astype(int)
 
-UtilClass.display(temperatures, pressures, elapsed_time, results_float, title_primer)
+UtilClass.display(temperatures, pressures, results_display, title_primer, adjust_display_iterations)
 
 
 

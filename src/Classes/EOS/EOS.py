@@ -1,14 +1,14 @@
 import math
 from typing import List, Tuple
+import EnumsClasses.MethodsAndTypes
 from Models.Component import Component
 import numpy as np
+import EnumsClasses.MethodsAndTypes as MT
+
 
 class EOSBase:
-    """
-    Base class
-    """
 
-    R = 8.314
+    R = MT.CONSTANTS.R
     
     def __init__(self, components: List[Component], T: float, P: float):
         self.components = components  
@@ -17,37 +17,30 @@ class EOSBase:
         self.a_i = []                 
         self.b_i = []
         self.Zv = None
-        self.Zl = None                 
-        self.calc_parameters()   
-
+        self.Zl = None
+        self.sqrt_ai = None
+        self.calc_parameters()
+        self.k_ij = None
 
     def calc_parameters(self):
         alpha_vals = np.array([self.alpha(comp) for comp in self.components])
         self.a_i = np.array([self.a_formula(comp) for comp in self.components]) * alpha_vals
         self.b_i = np.array([self.b_formula(comp) for comp in self.components])
-
+        self.sqrt_ai = np.sqrt(self.a_i)
 
     def get_Z_factors(self, x: List[float], y: List[float]) -> Tuple[float, float]:
+        
         x = np.array(x)
+        a_mix, b_mix, A, B = self.get_mixture_parameters(x)
+        Z_liq= self.calc_Z_factor(A, B, 'liquid')
+
         y = np.array(y)
-
-        def compute_A_B(comp_frac: np.ndarray) -> Tuple[float, float]:
-            b_mix = np.dot(comp_frac, self.b_i)
-            a_mix = np.sum(np.outer(comp_frac, comp_frac) * np.sqrt(np.outer(self.a_i, self.a_i)))
-            A = a_mix * self.P / (self.R ** 2 * self.T ** 2)
-            B = b_mix * self.P / (self.R * self.T)
-            return A, B
-
-        A_liq, B_liq = compute_A_B(x)
-        A_vap, B_vap = compute_A_B(y)
-
-        Z_liq = self.calc_Z_factor(A_liq, B_liq, phase='liquid')
-        Z_vap = self.calc_Z_factor(A_vap, B_vap, phase='vapor')
+        a_mix, b_mix, A, B = self.get_mixture_parameters(y)
+        Z_vap = self.calc_Z_factor(A, B, 'vapor')
 
         self.Zl = Z_liq
         self.Zv = Z_vap
         return Z_liq, Z_vap
-    
     
     def alpha(self, comp: Component) -> float:
         """ 
@@ -95,10 +88,8 @@ class EOSBase:
 
         return [r for r in roots if isinstance(r, float) and not math.isnan(r)]
 
-    def calc_Z_factor(self, A: float, B: float, phase: str = 'vapor') -> float:
-        """
-        Z factor
-        """
+    def calc_Z_factor(self, A: float, B: float, phase: MT.Phase) -> float:
+
         coeffs = self.get_coefficients(A, B)
         roots = self.solve_cubic(coeffs)
 
@@ -109,37 +100,50 @@ class EOSBase:
                 f"T={self.T}, P={self.P}. Check EOS parameters or system conditions."
             )
         
-        if phase == 'vapor':
+        if phase == MT.Phase.VAPOR:
             self.Zv = max(roots)
         else:
             self.Zl = min(roots)
 
-        return self.Zv if phase == 'vapor' else self.Zl
+        return self.Zv if phase == MT.Phase.VAPOR else self.Zl
 
+    def ensure_Z_for_phase(self, composition, phase: MT.Phase) -> float:
+        x = np.asarray(composition, dtype=float)
+        _, _, A, B = self.get_mixture_parameters(x)
+        return self.calc_Z_factor(A, B, phase)
 
-    def fugacity_coeff(self, x: List[float], phase: str = 'vapor') -> list:
-        
-        x = np.array(x)
+    def fugacity_coeff(self, x: List[float], phase: MT.Phase) -> np.ndarray:
+        x = np.array(x, dtype=float)
         a_mix, b_mix, A, B = self.get_mixture_parameters(x)
         Z = self.calc_Z_factor(A, B, phase)
 
-        #sqrt_ai = np.sqrt(self.a_i)
-        phi = []
+        # --- preduvjeti i konstante ---
+        sqrt2 = np.sqrt(2.0)
+        eps = 1e-14
 
-        for i in range(len(x)):
-            sum_a = np.sum(x * np.sqrt(self.a_i[i] * self.a_i))
-            bi = self.b_i[i]
-            term1 = bi / b_mix * (Z - 1) - np.log(Z - B)
-            term2 = A / (2 * np.sqrt(2) * B)
-            term3 = 2 * sum_a / a_mix - bi / b_mix
-            term4 = np.log((Z + (1 + np.sqrt(2)) * B) / (Z + (1 - np.sqrt(2)) * B))
-            ln_phi = term1 - term2 * term3 * term4
-            phi.append(np.exp(ln_phi))
+        # vektorizacija: sum_a_i = sqrt(a_i) * sum_j x_j sqrt(a_j)
+        sqrt_ai = self.sqrt_ai                    # (nc,)
+        S = float(x @ sqrt_ai)                        # skalar
+        sum_a_vec = sqrt_ai * S                       # (nc,)
 
-        return np.array(phi)
+        bi = self.b_i                                 # (nc,)
 
-    
-    def get_pressure(self, v_molar: float, phase: str = 'vapor') -> float: 
+        # skalari
+        term_log = np.log(np.clip(Z - B, eps, None))
+        C = A / (2.0 * sqrt2 * B)
+        L = np.log(
+            np.clip(Z + (1.0 + sqrt2) * B, eps, None) /
+            np.clip(Z + (1.0 - sqrt2) * B, eps, None)
+        )
+
+        # vektori
+        term1 = (bi / b_mix) * (Z - 1.0) - term_log
+        term3 = 2.0 * (sum_a_vec / a_mix) - (bi / b_mix)
+
+        ln_phi = term1 - C * term3 * L                # (nc,)
+        return np.exp(ln_phi)
+
+    def get_pressure(self, v_molar: float) -> float: 
         a_mix, b_mix, _, _ = self.get_mixture_parameters()
 
         T = self.T
@@ -154,16 +158,33 @@ class EOSBase:
         P = num1 / denom1 - num2 / denom2
 
         return P
+  
+    def get_mixture_parameters(self, composition: np.ndarray = None) -> tuple[float, float, float, float]:
 
-    
-    def get_mixture_parameters(self, composition: np.ndarray = None) -> Tuple[float, float, float, float]:
         if composition is None:
-            composition = np.array([comp.fraction for comp in self.components])
-        
-        a_mix = np.sum(np.outer(composition, composition) * np.sqrt(np.outer(self.a_i, self.a_i)))
-        b_mix = np.dot(composition, self.b_i)
+            x = np.array([c.fraction for c in self.components], dtype=float)
+        else:
+            x = np.asarray(composition, dtype=float)
+        s = x.sum()
+        if s <= 0.0:
+            raise ValueError("Suma sastava mora biti > 0.")
+        x = x / s
 
-        A = a_mix * self.P / (self.R ** 2 * self.T ** 2)
-        B = b_mix * self.P / (self.R * self.T)
+        # pomocni vektor u_i = x_i * sqrt(a_i)
+        u = x * self.sqrt_ai
+
+        if self.k_ij is None or not np.any(self.k_ij):
+            S = float(u.sum())
+            a_mix = S * S
+        else:
+            K = np.asarray(self.k_ij, dtype=float)
+            a_mix = float(u @ ((1.0 - K) @ u))
+
+        # 3) b_mix
+        b_mix = float(x @ self.b_i)
+
+        R, T, P = self.R, self.T, self.P
+        A = a_mix * P / (R * R * T * T)
+        B = b_mix * P / (R * T)
 
         return a_mix, b_mix, A, B

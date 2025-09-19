@@ -22,10 +22,10 @@ def calculate_steps(steps: int, length: int, d_in: float, e: float, p: float, tK
        case = CASES.CO2
     elif case.upper() == 'PVT':
         case = CASES.PVT
-        df_lookup = composition
+        data = composition
     elif case.upper() == 'CASE1':
         case = CASES.CASE1
-        df_lookup = LookupTableSingleton.load_lookup_table("case1")
+        data = LookupTableSingleton.load_lookup_table("case1")
     ###################################################################################        
 
     TIMEFORMAT = "%H:%M:%S"
@@ -37,7 +37,7 @@ def calculate_steps(steps: int, length: int, d_in: float, e: float, p: float, tK
     print(f'start {datetime.datetime.now().strftime(TIMEFORMAT)}')     
 
     dfi = flow_instance.dp_table_combined(L = length, d_in = d_in, 
-                    e = e, p1 = p, T1 = tK, qm = qm, case=case, nsteps = steps, lookup_table = df_lookup)
+                    e = e, p1 = p, T1 = tK, qm = qm, case=case, nsteps = steps, datasource = data)
 
                             
     dfi['rho_g'] = dfi['rho_g'].astype(float)         # format for plotting

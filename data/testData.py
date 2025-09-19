@@ -173,7 +173,7 @@ class ComponentData:
                 "Tc": 154.6,
                 "Pc": 50.43,
                 "omega": 0.0222,
-                "fraction": 0.047,
+                "fraction": 0.0469,
                 "CpA": 29.10,
                 "CpB": 0,
                 "CpC": 0,
