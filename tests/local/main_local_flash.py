@@ -2,7 +2,8 @@ from src.Endpoints.EOSModul import perform_eos_calculation
 from Models.Component import Component
 from src.Classes import UtilClass
 from data.testData import ComponentData
-from src.EnumsClasses import SolveMethod, EOSType
+from data.testDataBIC import ComponentDataBIC
+import src.EnumsClasses.MethodsAndTypes as MT
 import pandas as pd
 import numpy as np
 import time
@@ -18,20 +19,29 @@ print("sys.path:", sys.path)
 import eos_cpp 
 
 #u bin imas pyd file, to je dll sa zvanje iz cpp
-cplusplus = False
-display_iterations = False
-adjust_display_iterations = False
+cplusplus = False                   # python mora imati istu verziju kao i pyd file (313 npr -> 3.13)
+display_iterations = False          # samo iteracije nema veze sa negative flesh nuzno
+adjust_display_iterations = False   # prikazuje u razlicitm bojama nizi broj iteracija, bitno i za negativan flash
+toggle_phase_detect = False         # umjesto V pare daje sifru izlaza iz Rachford-Rice, isklucivo sa display_iterations
+is_BIC_used = True                  # provjeri koju matricu uopce upotrebljavas
+
 
 # funkcije da izgleda urednije
-title_primer = "data_oxyfuel_comp1"  # za prikaz vise, nije elementarno
+title_primer = "oxyfuel_comp1"  # za prikaz vise, nije elementarno
 components = ComponentData.oxyfuel_comp1 # podaci koji se actually prikazuju  
+if is_BIC_used:
+    BIC_coeff = ComponentDataBIC.data_oxyfuel_comp_1_2_3
+else:
+    BIC_coeff = None
 
 UtilClass.check_total_fraction(components, title_primer)
 
-temperatures = np.arange(150, 400, 1)  
-pressures = np.arange(1, 105, 1)      
+temperatures = np.arange(250, 323, 1)  
+pressures = np.arange(1, 110, 1)      
 results = pd.DataFrame(index=pressures, columns=temperatures)
 resultsIteration = pd.DataFrame(index=pressures, columns=temperatures)
+if toggle_phase_detect:
+    excel_rep = pd.DataFrame(columns=["T_K", "P_bar", "FL", "Fv", "Zl", "Zv"])
 
 start_time = time.time() 
 
@@ -53,22 +63,42 @@ else:
                 components,
                 Tt,        
                 Pp,
-                EOSType.PR,            
-                SolveMethod.FSOLVE,
-                True
+                MT.EOSType.PR,            
+                MT.SolveMethod.FSOLVE,
+                toggle_phase_detect,
+                BIC= BIC_coeff
                 ) 
             results.at[Pp, Tt] = result["V"]
             resultsIteration.at[Pp, Tt] = result["iteration"]
-            #print(f"{Tt} ---- {Pp}")
+            
+            if toggle_phase_detect:
+                V_num = result["V"]
+                phase = UtilClass.get_phase(V_num)
+                if phase == MT.Phase.LIQUID:
+                    Vl = 1 
+                    Vp = 0
+                if phase == MT.Phase.VAPOR:
+                    Vl = 0 
+                    Vp = 1
+                if phase == MT.Phase.VAPORLIQUID: 
+                    Vl = 1 - V_num
+                    Vp = V_num
+
+                excel_rep.loc[len(excel_rep)] = [Tt-273, Pp, Vl, Vp, result["Zl"], result["Zv"]]
 
 end_time = time.time()  # Kraj mjerenja
 elapsed_time = end_time - start_time
 print(f"Vrijeme : {elapsed_time:.5f} sek")
 
+
+
 #print(results)
 #print(resultsIteration)
 #results.to_csv("results3.xlsx")
 #resultsIteration.to_csv("resultsIT.xlsx")
+#V, x, y, method_used, iteration, Zl, Zv
+if toggle_phase_detect:
+    excel_rep.to_excel("lookup_table_case1_pvt_version.xlsx", index=False, engine="openpyxl")
 
 if not display_iterations:
     results_display = results.astype(float)

@@ -162,7 +162,7 @@ if __name__ == "__main__":
    print("======================================== SO2 ===============================================")
    components = []
 
-   for comp in ComponentData.data_example_flow_loop_2step["components"]:
+   for comp in ComponentData._data_example_flow_loop_2step["components"]:
         component = Component(
             name=comp["name"],
             formula=comp["formula"],
@@ -183,7 +183,7 @@ if __name__ == "__main__":
    eos = PengRobinsonEOS(components, T=T_target, P=1e5)  
    n_total = 11.128446
    v_molar = V_LOOP / n_total  # m3/mol
-   p_real = eos.get_pressure(v_molar, phase='vapor')
+   p_real = eos.get_pressure(v_molar)
 
    print(f"p_real: {p_real / 1e5} na cca {T_target}K nakon dodavanja SO2")
 
@@ -192,7 +192,7 @@ if __name__ == "__main__":
    print("======================================= N2&Ar ==============================================")
    components = []
 
-   for comp in ComponentData.data_example_flow_loop_3step["components"]:
+   for comp in ComponentData._data_example_flow_loop_3step["components"]:
         component = Component(
             name=comp["name"],
             formula=comp["formula"],
@@ -213,7 +213,7 @@ if __name__ == "__main__":
    eos = PengRobinsonEOS(components, T=T_target, P=1e5)  
    n_total = 17.399096
    v_molar = V_LOOP / n_total  # m3/mol
-   p_real = eos.get_pressure(v_molar, phase='vapor')
+   p_real = eos.get_pressure(v_molar)
 
    print(f"p_real: {p_real / 1e5} na cca {T_target}K nakon dodtka N2 i Ar")
 
@@ -222,7 +222,7 @@ if __name__ == "__main__":
    print("=================================== CO2 - 20 molova ==========================================")
    components = []
 
-   for comp in ComponentData.data_example_flow_loop_3step["components"]:
+   for comp in ComponentData._data_example_flow_loop_3step["components"]:
         component = Component(
             name=comp["name"],
             formula=comp["formula"],
@@ -243,7 +243,7 @@ if __name__ == "__main__":
    eos = PengRobinsonEOS(components, T=T_target, P=1e5)  
    n_total = 37.399096
    v_molar = V_LOOP / n_total  # m3/mol
-   p_real = eos.get_pressure(v_molar, phase='vapor')
+   p_real = eos.get_pressure(v_molar)
 
    print(f"p_real: {p_real / 1e5} na cca {T_target}K nakon dodtka N2 i Ar") 
 
@@ -251,7 +251,7 @@ if __name__ == "__main__":
    print("================================== CO2 - jos 30 molova =======================================")
    components = []
 
-   for comp in ComponentData.data_example_flow_loop_3step["components"]:
+   for comp in ComponentData._data_example_flow_loop_3step["components"]:
         component = Component(
             name=comp["name"],
             formula=comp["formula"],
@@ -272,7 +272,7 @@ if __name__ == "__main__":
    eos = PengRobinsonEOS(components, T=T_target, P=1e5)  
    n_total = 67.399096
    v_molar = V_LOOP / n_total  # m3/mol
-   p_real = eos.get_pressure(v_molar, phase='vapor')
+   p_real = eos.get_pressure(v_molar)
 
    print(f"p_real: {p_real / 1e5} na cca {T_target}K nakon dodtka N2 i Ar") 
 

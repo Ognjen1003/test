@@ -10,7 +10,7 @@ import json
 warnings.filterwarnings("ignore")
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 
-
+#P:pa T:K length:m qm kg/m3 d_in:m e:pipe roughness
 def calculate_steps(steps: int, length: int, d_in: float, e: float, p: float, tK: float, qm: float, case: str, composition: list) -> dict:
 
     ################################### case handling #################################

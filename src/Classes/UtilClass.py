@@ -1,3 +1,4 @@
+import EnumsClasses.MethodsAndTypes as MT
 import numpy as np
 from scipy.optimize import fsolve
 from numpy.ma.core import log10
@@ -12,10 +13,12 @@ import seaborn as sns
 import sys
 import os
 from typing import List
-import EnumsClasses
+
+
 
 bin_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'bin'))
 sys.path.insert(0, bin_path)  # stavim ga kao prvi prioritet
+import EnumsClasses.MethodsAndTypes
 import eos_cpp 
 
 class Util:
@@ -168,3 +171,12 @@ def is_near_critical(Zl: float, Zv: float, tol: float = 1e-6) -> bool:
     if Zl is None or Zv is None:
         return False
     return abs(Zv - Zl) < tol
+
+def get_phase(phase: float) -> MT.Phase:
+
+        if phase == -2 or phase == -3 or phase == 2 or phase == -10:                        #tekuce
+            return MT.Phase.LIQUID
+        elif phase == -8 or phase == -9 or phase == 3 or phase == 5:                       #plinovito
+            return MT.Phase.VAPOR
+        
+        return MT.Phase.VAPORLIQUID

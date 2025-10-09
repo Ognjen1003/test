@@ -286,6 +286,141 @@ class ComponentData:
         ]
     }
 
+    _data_oxyfuel_comp1_original = {
+        "components": [
+            {
+                "name": "CO2",
+                "formula": "CO2",
+                "Mw": 44.01,
+                "Tc": 304.7,
+                "Pc": 73.866,
+                "omega": 0.225,
+                "fraction": 0.90,
+                "CpA": 22.26,
+                "CpB": 5.981e-3,
+                "CpC": -3.501e-6,
+                "CpD": 7469.0,
+            },
+            {
+                "name": "O2",
+                "formula": "O2",
+                "Mw": 32.00,
+                "Tc": 154.6,
+                "Pc": 50.43,
+                "omega": 0.0222,
+                "fraction": 0.06,
+                "CpA": 29.10,
+                "CpB": 0,
+                "CpC": 0,
+                "CpD": 0,
+            },
+            {
+                "name": "N2",
+                "formula": "N2",
+                "Mw": 28.013,
+                "Tc": 126.2,
+                "Pc": 33.944,
+                "omega": 0.04,
+                "fraction": 0.03,
+                "CpA": 28.90,
+                "CpB": -0.0001571,
+                "CpC": 8.081e-7,
+                "CpD": 0.0,
+            },
+            {
+                "name": "Ar",
+                "formula": "Ar",
+                "Mw": 39.948,
+                "Tc": 150.8,
+                "Pc": 48.63,
+                "omega": -0.004,
+                "fraction": 0.01,
+                "CpA": 20.85,
+                "CpB": 0,
+                "CpC": 0,
+                "CpD": 0,
+            },
+            {
+                "name": "H2O",
+                "formula": "H2O",
+                "Mw": 18.015,
+                "Tc": 647.1,
+                "Pc": 220.64,
+                "omega": 0.344,
+                "fraction": 0.000,
+                "CpA": 32.24,
+                "CpB": 0,
+                "CpC": 0,
+                "CpD": 0,
+            },
+            {
+                "name": "NO",
+                "formula": "NO",
+                "Mw": 30.006,
+                "Tc": 180.0,
+                "Pc": 64.0,
+                "omega": 0.584,
+                "fraction": 0.0000,
+                "CpA": 29.10,
+                "CpB": 0,
+                "CpC": 0,
+                "CpD": 0,
+            },
+            {
+                "name": "SO2",
+                "formula": "SO2",
+                "Mw": 64.066,
+                "Tc": 430.8,
+                "Pc": 77.8,
+                "omega": 0.251,
+                "fraction": 0.0000,
+                "CpA": 40.0,
+                "CpB": 0,
+                "CpC": 0,
+                "CpD": 0,
+            },
+            {
+                "name": "SO3",
+                "formula": "SO3",
+                "Mw": 80.063,
+                "Tc": 490.0,
+                "Pc": 83.0,
+                "omega": 0.315,
+                "fraction": 0.00000,
+                "CpA": 50.0,
+                "CpB": 0,
+                "CpC": 0,
+                "CpD": 0,
+            },
+            {
+                "name": "CO",
+                "formula": "CO",
+                "Mw": 28.010,
+                "Tc": 132.9,
+                "Pc": 34.94,
+                "omega": 0.045,
+                "fraction": 0.00000,
+                "CpA": 29.14,
+                "CpB": 0,
+                "CpC": 0,
+                "CpD": 0,
+            },
+            {
+                "name": "H2S",
+                "formula": "H2S+COS",
+                "Mw": 34.08,
+                "Tc": 373.2,
+                "Pc": 88.0,
+                "omega": 0.1,
+                "fraction": 0.00000,
+                "CpA": 34.0,
+                "CpB": 0,
+                "CpC": 0,
+                "CpD": 0,
+            },
+        ]
+    }
+
     _data_oxyfuel_comp2 = {
         "components": [
             {
@@ -407,7 +542,7 @@ class ComponentData:
             },
             {
                 "name": "H2S",
-                "formula": "H2S+COS",
+                "formula": "H2S",
                 "Mw": 34.08,
                 "Tc": 373.2,
                 "Pc": 88.0,
@@ -556,7 +691,6 @@ class ComponentData:
         ]
     }
 
-
     _data_example_flow_loop = {
         "components": [
             {
@@ -627,7 +761,6 @@ class ComponentData:
         ]
     }
     
-
     _data_example_flow_loop_CO2_20_1step_2_2_bara_P_init = {
         "components": [
             {
@@ -970,21 +1103,206 @@ class ComponentData:
         ]
     }
 
+    _data_zebanec2_study_2007 = {
+        "components": [
+            {
+                "name": "Carbon Dioxide",
+                "formula": "CO2",
+                "Mw": 44.010,
+                "Tc": 304.7,
+                "Pc": 73.866,
+                "omega": 0.225,
+                "fraction": 0.65423,
+                "CpA": 22.26,
+                "CpB": 5.981e-3,
+                "CpC": -3.501e-6,
+                "CpD": 7469.0,
+            },
+            {
+                "name": "Nitrogen",
+                "formula": "N2",
+                "Mw": 28.013,
+                "Tc": 126.2,
+                "Pc": 33.944,
+                "omega": 0.04,
+                "fraction": 0.03727,
+                "CpA": 28.90,
+                "CpB": -0.0001571,
+                "CpC": 8.081e-07,
+                "CpD": 0.0,
+            },
+            {
+                "name": "Methane",
+                "formula": "C1",
+                "Mw": 16.043,
+                "Tc": 190.6,
+                "Pc": 46.042,
+                "omega": 0.013,
+                "fraction": 0.27687,
+                "CpA": 19.89,
+                "CpB": 5.024e-2,
+                "CpC": 1.269e-5,
+                "CpD": -11.01e-9,
+            },
+            {
+                "name": "Ethane",
+                "formula": "C2",
+                "Mw": 30.070,
+                "Tc": 305.43,
+                "Pc": 48.839,
+                "omega": 0.0986,
+                "fraction": 0.0119,
+                "CpA": 21.13,
+                "CpB": 78.60e-3,
+                "CpC": -11.85e-6,
+                "CpD": 18.99e-9,
+            },
+            {
+                "name": "Propane",
+                "formula": "C3",
+                "Mw": 44.097,
+                "Tc": 369.8,
+                "Pc": 42.455,
+                "omega": 0.1524,
+                "fraction": 0.00359,
+                "CpA": 14.67,
+                "CpB": 75.83e-3,
+                "CpC": -25.60e-6,
+                "CpD": 29890.0,
+            },
+            {
+                "name": "i-Butane",
+                "formula": "IC4",
+                "Mw": 58.124,
+                "Tc": 408.1,
+                "Pc": 36.477,
+                "omega": 0.1848,
+                "fraction": 0.00088,
+                "CpA": 19.26,
+                "CpB": 98.72e-3,
+                "CpC": -37.20e-6,
+                "CpD": 37400.0,
+            },
+            {
+                "name": "n-Butane",
+                "formula": "NC4",
+                "Mw": 58.124,
+                "Tc": 425.2,
+                "Pc": 37.966,
+                "omega": 0.201,
+                "fraction": 0.00149,
+                "CpA": 24.86,
+                "CpB": 133.4e-3,
+                "CpC": -30.1e-6,
+                "CpD": 34.1e-9,
+            },
+            {
+                "name": "i-Pentane",
+                "formula": "IC5",
+                "Mw": 72.151,
+                "Tc": 460.4,
+                "Pc": 33.893,
+                "omega": 0.227,
+                "fraction": 0.00072,
+                "CpA": 23.54,
+                "CpB": 133.7e-3,
+                "CpC": -45.00e-6,
+                "CpD": 47.90e3,
+            },
+            {
+                "name": "n-Pentane",
+                "formula": "NC5",
+                "Mw": 72.151,
+                "Tc": 469.6,
+                "Pc": 33.701,
+                "omega": 0.251,
+                "fraction": 0.00083,
+                "CpA": 23.71,
+                "CpB": 147.4e-3,
+                "CpC": -50.30e-6,
+                "CpD": 52.80e3,
+            },
+                        {
+                "name": "Hexane",
+                "formula": "C6",
+                "Mw": 84.000,
+                "Tc": 507.5,
+                "Pc": 30.104,
+                "omega": 0.299,
+                "fraction": 0.00234,
+                "CpA": 25.73,
+                "CpB": 171.8e-3,
+                "CpC": -60.10e-6,
+                "CpD": 61.70e3,
+            },
+            {
+                "name": "Heptane",
+                "formula": "C7",
+                "Mw": 100.205,   # g/mol
+                "Tc": 540.2,     # K
+                "Pc": 27.40,     # bar
+                "omega": 0.349,
+                "fraction": 0.00437,
+                "CpA": 29.00, 
+                "CpB": 220.0e-3, 
+                "CpC": -90.00e-6, 
+                "CpD": 80.00e3,
+            },
+            {
+                "name": "Octane",
+                "formula": "C8",
+                "Mw": 114.232,   # g/mol
+                "Tc": 568.7,     # K
+                "Pc": 24.90,     # bar
+                "omega": 0.398,
+                "fraction": 0.00226,
+                "CpA": 29.00, 
+                "CpB": 220.0e-3, 
+                "CpC": -90.00e-6, 
+                "CpD": 80.00e3,
+            },
+            {
+                "name": "Nonane",  # (ispravak: "Nano" -> "Nonane")
+                "formula": "C9",
+                "Mw": 128.255,   # g/mol
+                "Tc": 594.6,     # K
+                "Pc": 22.90,     # bar
+                "omega": 0.443,
+                "fraction": 0.00128,
+                "CpA": 29.00, 
+                "CpB": 220.0e-3, 
+                "CpC": -90.00e-6, 
+                "CpD": 80.00e3,
+            },
+            
+            {
+                "name": "Decanes+",
+                "formula": "C10+",
+                "Mw": 212.35,
+                "Tc": 723,
+                "Pc": 14.9,
+                "omega": 0.62,
+                "fraction": 0.00267,
+                "CpA": 29.00,
+                "CpB": 220.0e-3,
+                "CpC": -90.00e-6,
+                "CpD": 80.00e3,
+            }
+        ]
+    }
+
+
 
     data_components: ClassVar[List[Component]] = [Component(**c) for c in _data["components"]]
     oxyfuel_comp1: ClassVar[List[Component]] = [Component(**c) for c in _data_oxyfuel_comp1["components"]]
+    oxyfuel_comp1_original: ClassVar[List[Component]] = [Component(**c) for c in _data_oxyfuel_comp1_original["components"]]
     oxyfuel_comp2: ClassVar[List[Component]] = [Component(**c) for c in _data_oxyfuel_comp2["components"]]
     oxyfuel_comp3: ClassVar[List[Component]] = [Component(**c) for c in _data_oxyfuel_comp3["components"]]
     example_flow_loop: ClassVar[List[Component]] = [Component(**c) for c in _data_example_flow_loop["components"]]
-    example_flow_loop_CO2_20_1step_2_2_bara_P_init: ClassVar[List[Component]] = [
-        Component(**c) for c in _data_example_flow_loop_CO2_20_1step_2_2_bara_P_init["components"]
-    ]
+    example_flow_loop_CO2_20_1step_2_2_bara_P_init: ClassVar[List[Component]] = [ Component(**c) for c in _data_example_flow_loop_CO2_20_1step_2_2_bara_P_init["components"]]
     example_flow_loop_2step: ClassVar[List[Component]] = [Component(**c) for c in _data_example_flow_loop_2step["components"]]
     example_flow_loop_3step: ClassVar[List[Component]] = [Component(**c) for c in _data_example_flow_loop_3step["components"]]
-    example_flow_loop_4step_20_moles_of_CO2: ClassVar[List[Component]] = [
-        Component(**c) for c in _data_example_flow_loop_4step_20_moles_of_CO2["components"]
-    ]
-    example_flow_loop_4step_30_moles_of_CO2: ClassVar[List[Component]] = [
-        Component(**c) for c in _data_example_flow_loop_4step_30_moles_of_CO2["components"]
-    ]
+    example_flow_loop_4step_20_moles_of_CO2: ClassVar[List[Component]] = [Component(**c) for c in _data_example_flow_loop_4step_20_moles_of_CO2["components"]]
+    example_flow_loop_4step_30_moles_of_CO2: ClassVar[List[Component]] = [Component(**c) for c in _data_example_flow_loop_4step_30_moles_of_CO2["components"]]
     Domagoj_3_ujutro: ClassVar[List[Component]] = [Component(**c) for c in _data_Domagoj_3_ujutro["components"]]
+    data_zebanec2_study_2007: ClassVar[List[Component]] = [Component(**c) for c in _data_zebanec2_study_2007["components"]]

@@ -59,8 +59,8 @@ async def calculate_EOS(input_data: EOSInputModel, request: Request):
 
         result = perform_eos_calculation(
             components=components,
-            T=input_data.T,
-            P=input_data.P,
+            T_K=input_data.T,
+            P_bar=input_data.P,
             eos_type=input_data.eos_type,
             method=input_data.method,
             calculate_enthalpy=input_data.calculate_enthalpy
