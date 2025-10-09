@@ -1,16 +1,16 @@
+import EnumsClasses.MethodsAndTypes as MT
+from Models.Component import Component
 import math
 from typing import List, Tuple
-import EnumsClasses.MethodsAndTypes
-from Models.Component import Component
 import numpy as np
-import EnumsClasses.MethodsAndTypes as MT
+
 
 
 class EOSBase:
 
     R = MT.CONSTANTS.R
     
-    def __init__(self, components: List[Component], T: float, P: float):
+    def __init__(self, components: List[Component], T: float, P: float, k_ij: np.ndarray | None = None):
         self.components = components  
         self.T = T                    
         self.P = P                   
@@ -19,14 +19,27 @@ class EOSBase:
         self.Zv = None
         self.Zl = None
         self.sqrt_ai = None
-        self.calc_parameters()
         self.k_ij = None
+        self.calc_parameters()
+        if k_ij is not None:
+            self.set_kij(k_ij)
 
     def calc_parameters(self):
         alpha_vals = np.array([self.alpha(comp) for comp in self.components])
         self.a_i = np.array([self.a_formula(comp) for comp in self.components]) * alpha_vals
         self.b_i = np.array([self.b_formula(comp) for comp in self.components])
         self.sqrt_ai = np.sqrt(self.a_i)
+
+    def set_kij(self, k_ij: np.ndarray):
+        k_ij = np.asarray(k_ij, dtype=float)
+        nc = len(self.components)
+        if k_ij.shape != (nc, nc):
+            raise ValueError(f"k_ij mora biti oblika {(nc, nc)}, dobiveno {k_ij.shape}")
+        if not np.allclose(k_ij, k_ij.T, atol=1e-12):
+            raise ValueError("k_ij mora biti simetrična matrica.")
+        if not np.allclose(np.diag(k_ij), 0.0, atol=1e-12):
+            raise ValueError("Dijagonala k_ij mora biti nula.")
+        self.k_ij = k_ij    
 
     def get_Z_factors(self, x: List[float], y: List[float]) -> Tuple[float, float]:
         
@@ -117,18 +130,11 @@ class EOSBase:
         a_mix, b_mix, A, B = self.get_mixture_parameters(x)
         Z = self.calc_Z_factor(A, B, phase)
 
-        # --- preduvjeti i konstante ---
         sqrt2 = np.sqrt(2.0)
         eps = 1e-14
+        sqrt_ai = self.sqrt_ai
+        bi = self.b_i
 
-        # vektorizacija: sum_a_i = sqrt(a_i) * sum_j x_j sqrt(a_j)
-        sqrt_ai = self.sqrt_ai                    # (nc,)
-        S = float(x @ sqrt_ai)                        # skalar
-        sum_a_vec = sqrt_ai * S                       # (nc,)
-
-        bi = self.b_i                                 # (nc,)
-
-        # skalari
         term_log = np.log(np.clip(Z - B, eps, None))
         C = A / (2.0 * sqrt2 * B)
         L = np.log(
@@ -136,13 +142,23 @@ class EOSBase:
             np.clip(Z + (1.0 - sqrt2) * B, eps, None)
         )
 
-        # vektori
+        # k_ij-konzistentni sum_a_vec
+        u = x * sqrt_ai  # (nc,)
+        if self.k_ij is None or not np.any(self.k_ij):
+            # k_ij = 0 sum_a_vec = sqrt_ai * sum(u)
+            S = float(u.sum())
+            sum_a_vec = sqrt_ai * S
+        else:
+            K = np.asarray(self.k_ij, dtype=float)
+            t = (1.0 - K) @ u                # (nc,)
+            sum_a_vec = sqrt_ai * t          # (nc,)
+
         term1 = (bi / b_mix) * (Z - 1.0) - term_log
         term3 = 2.0 * (sum_a_vec / a_mix) - (bi / b_mix)
 
-        ln_phi = term1 - C * term3 * L                # (nc,)
+        ln_phi = term1 - C * term3 * L
         return np.exp(ln_phi)
-
+    
     def get_pressure(self, v_molar: float) -> float: 
         a_mix, b_mix, _, _ = self.get_mixture_parameters()
 

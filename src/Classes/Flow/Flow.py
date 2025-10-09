@@ -1,6 +1,8 @@
-from src.EnumsClasses.MethodsAndTypes import CASES
 from src.Endpoints.EOSModul import perform_eos_calculation
-from src.EnumsClasses import SolveMethod, EOSType
+import src.EnumsClasses.MethodsAndTypes as MT
+import src.Classes.Flow.Density as D
+import src.Classes.Flow.Viscosity as V
+import src.Classes.UtilClass as Util
 import pandas as pd
 from numpy.ma.core import log10
 import numpy as np
@@ -9,7 +11,8 @@ from scipy.interpolate import griddata
 import CoolProp.CoolProp as CP
 from numba import jit
 import sys, os
-import src.Classes.Flow.Density as D
+
+
 
 
 bin_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..\\..', '..', 'bin'))
@@ -86,55 +89,68 @@ class Flow:
         dp = f * (L / D) * rho_g * (v ** 2) / 2
         return dp
 
-
     #@jit(forceobj=True)
     def dp_table_combined(self, L, d_in, e, p1, T1, qm, case, nsteps=10, datasource=None):
         
         df_dp = pd.DataFrame(columns=['step', 'L', 'p1', 't', 'mu', 'rho_g', 'u', 'Re', 'ff', 'dp', 'p2'])
         A = 0.25*np.pi*d_in**2
 
-        if case == CASES.CASE1:
+        if case == MT.CASES.CASE1:
             points = datasource[['p', 't']].values
 
         for i in range(nsteps):
-            if case == CASES.CO2:
+            if case == MT.CASES.CO2:
                 # Pure CO2 logic (from dp_table_pure)
-                rho_gas = CP.PropsSI('D', 'T', T1, 'P', p1, 'CO2')
+                rho = CP.PropsSI('D', 'T', T1, 'P', p1, 'CO2')
                 mu = CP.PropsSI('V', 'T', T1, 'P', p1, 'CO2')
-            elif case == CASES.PVT:
+            elif case == MT.CASES.PVT:
                 composition = datasource
-                p1 = p1/10000
-                result = perform_eos_calculation(composition, T1, p1, EOSType.PR, SolveMethod.FSOLVE, True) 
+                p_bar = p1/100000
+                rho = self.get_rho(p1, T1, composition, p_bar)
+                mu = self.get_viscosity(composition, T1, rho)
                 
-                print(f" =================== result: {result}  =================== ")
-                phase = result["V"]
-                Zv = result["Zv"]
-                Zl = result["Zl"]
-                             
-                if phase == -2 or phase == -3 or phase == 2:                        #tekuce
-                    rho = D.DensityClass.density_from_Z(composition, T1, p1*10000, Zl)
-                elif phase == -8 or phase == 9 or phase == 3:                       #plinovito
-                    rho = D.DensityClass.density_from_Z(composition, T1, p1*10000, Zv)
-
-                mu = 0.1
-                print(f"======================== rho = {rho} ========================")
-                
-            elif case == CASES.CASE1:
+            elif case == MT.CASES.CASE1:
                 # Standard lookup table logic (from dp_table)
-                rho_gas = griddata(points, datasource['rho_g'].values, (p1 / 1e5, T1 - 273.15), method='linear')
-                print(f"======================== rho_gas = {rho_gas} ========================")
+                rho = griddata(points, datasource['rho_g'].values, (p1 / 1e5, T1 - 273.15), method='linear')
                 mu = griddata(points, datasource['mu_g'].values, (p1 / 1e5, T1 - 273.15), method='linear')
 
             # Common logic for both cases
-            qv = qm / rho_gas
+            qv = qm / rho
             u = qv / A
-            Re = self.Reynolds(rho_gas, u, d_in, mu)
+            Re = self.Reynolds(rho, u, d_in, mu)
             ff = self.f_Colebrook_White(d_in, Re, e)
-            dP = self.p_Darcy_Weisbach(v=u, rho_g=rho_gas, L=L / nsteps, f=ff, D=d_in)
+            dP = self.p_Darcy_Weisbach(v=u, rho_g=rho, L=L / nsteps, f=ff, D=d_in)
             p2 = p1 - dP
 
-            df_dp.loc[i] = [(i+ 1), (i + 1) * (L / nsteps), p1 / 1e5, T1 - 273.15, mu, rho_gas, u, Re, ff, dP / 1e5, p2 / 1e5]
+            df_dp.loc[i] = [(i+ 1), (i + 1) * (L / nsteps), p1 / 1e5, T1 - 273.15, mu, rho, u, Re, ff, dP / 1e5, p2 / 1e5]
             p1 = p2
 
         return df_dp
-    
+
+    def get_rho(self, p1, T1, composition, p_bar):
+
+        result = perform_eos_calculation(composition, T1, p_bar, MT.EOSType.PR, MT.SolveMethod.FSOLVE, True) 
+                
+        V = result["V"]
+        Zv = result["Zv"]
+        Zl = result["Zl"]
+
+        actual_phase = Util.get_phase(V)
+
+        if actual_phase == MT.Phase.LIQUID:                     
+            rho = D.DensityClass.density_from_Z(composition, T1, p1, Zl)
+        elif actual_phase == MT.Phase.VAPOR:                     
+            rho = D.DensityClass.density_from_Z(composition, T1, p1, Zv)
+        elif actual_phase == MT.Phase.VAPORLIQUID:
+            rho_liquid = D.DensityClass.density_from_Z(composition, T1, p1, Zl)
+            rho_vapor = D.DensityClass.density_from_Z(composition, T1, p1, Zv)
+            rho = D.DensityClass.bulk_density(rho_vapor, rho_liquid, V)
+        else:
+            raise ValueError("phase problem")
+        
+        return rho
+            
+    def get_viscosity(self, composition, T1, rho):
+        viscosity = V.ViscosityClass.gas_viscosity_wilke(composition, T1)
+        #viscosity = V.ViscosityClass.viscosity_lbc(composition, T1, rho)
+        return viscosity

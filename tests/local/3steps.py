@@ -6,6 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from CoolProp.CoolProp import PropsSI
 import pandas as pd
+import src.EnumsClasses.MethodsAndTypes as MT
 
 # ===== GENERALNE STVARI ZA SAD =====
 R = 8.314462618  # J/(mol·K)
@@ -131,7 +132,7 @@ def calculate_pressure_from_eos(df_input, T_K, V_m3):
     # Phase = RachfordRice.return_phase()  
     #if....
     #else...
-    p_real = eos.get_pressure(v_molar, phase='vapor')
+    p_real = eos.get_pressure(v_molar)
     return p_real
 
 
