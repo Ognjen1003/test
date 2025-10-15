@@ -1291,6 +1291,154 @@ class ComponentData:
         ]
     }
 
+    _grubisno_polje = {
+            "components": [
+            {
+                "name": "Nitrogen",
+                "formula": "N2",
+                "Mw": 28.013,
+                "Tc": 126.2,
+                "Pc": 34.6,
+                "omega": 0.0377,
+                "fraction": 0.15555155551555517,
+                "CpA": 28.90,
+                "CpB": -0.0001571,
+                "CpC": 8.081e-07,
+                "CpD": 0.0
+            },
+            {
+                "name": "Carbon Dioxide",
+                "formula": "CO2",
+                "Mw": 44.010,
+                "Tc": 304.19,
+                "Pc": 73.82,
+                "omega": 0.228,
+                "fraction": 0.007860078600786009,
+                "CpA": 22.26,
+                "CpB": 0.005981,
+                "CpC": -3.501e-06,
+                "CpD": 7469.0
+            },
+            {
+                "name": "Methane",
+                "formula": "C1",
+                "Mw": 16.043,
+                "Tc": 190.56,
+                "Pc": 45.99,
+                "omega": 0.012,
+                "fraction": 0.8196481964819649,
+                "CpA": 19.89,
+                "CpB": 0.05024,
+                "CpC": 1.269e-05,
+                "CpD": -1.101e-08
+            },
+            {
+                "name": "Ethane",
+                "formula": "C2",
+                "Mw": 30.070,
+                "Tc": 305.32,
+                "Pc": 48.72,
+                "omega": 0.1,
+                "fraction": 0.007640076400764009,
+                "CpA": 21.13,
+                "CpB": 0.07860,
+                "CpC": -1.185e-05,
+                "CpD": 1.899e-08
+            },
+            {
+                "name": "Propane",
+                "formula": "C3",
+                "Mw": 44.097,
+                "Tc": 369.83,
+                "Pc": 42.48,
+                "omega": 0.152,
+                "fraction": 0.0025300253002530027,
+                "CpA": 14.67,
+                "CpB": 0.07583,
+                "CpC": -2.56e-05,
+                "CpD": 29890.0
+            },
+            {
+                "name": "i-Butane",
+                "formula": "IC4",
+                "Mw": 58.124,
+                "Tc": 407.8,
+                "Pc": 36.4,
+                "omega": 0.184,
+                "fraction": 0.0024400244002440024,
+                "CpA": 19.26,
+                "CpB": 0.09872,
+                "CpC": -3.72e-05,
+                "CpD": 37400.0
+            },
+            {
+                "name": "n-Butane",
+                "formula": "NC4",
+                "Mw": 58.124,
+                "Tc": 425.12,
+                "Pc": 37.96,
+                "omega": 0.2,
+                "fraction": 0.000910009100091001,
+                "CpA": 24.86,
+                "CpB": 0.1334,
+                "CpC": -3.01e-05,
+                "CpD": 3.41e-08
+            },
+            {
+                "name": "i-Pentane",
+                "formula": "IC5",
+                "Mw": 72.151,
+                "Tc": 460.4,
+                "Pc": 33.8,
+                "omega": 0.228,
+                "fraction": 0.0009300093000930011,
+                "CpA": 23.54,
+                "CpB": 0.1337,
+                "CpC": -4.5e-05,
+                "CpD": 47900.0
+            },
+            {
+                "name": "n-Pentane",
+                "formula": "NC5",
+                "Mw": 72.151,
+                "Tc": 469.7,
+                "Pc": 33.7,
+                "omega": 0.252,
+                "fraction": 0.000250002500025,
+                "CpA": 23.71,
+                "CpB": 0.1474,
+                "CpC": -5.03e-05,
+                "CpD": 52800.0
+            },
+            {
+                "name": "Hexane",
+                "formula": "C6",
+                "Mw": 84.000,
+                "Tc": 512.8,
+                "Pc": 33.3,
+                "omega": 0.25,
+                "fraction": 0.000520005200052,
+                "CpA": 25.73,
+                "CpB": 0.1718,
+                "CpC": -6.01e-05,
+                "CpD": 61700.0
+            },
+            {
+                "name": "Heptanes+",
+                "formula": "C7+",
+                "Mw": 175,
+                "Tc": 579.025615728363,
+                "Pc": 23.979942787760409,
+                "omega": 0.6412160903316599,
+                "fraction": 0.001720017200172002,
+                "CpA": 29.00,
+                "CpB": 0.2200,
+                "CpC": -9.0e-05,
+                "CpD": 80000.0
+            }
+        ]
+    }
+
 
 
     data_components: ClassVar[List[Component]] = [Component(**c) for c in _data["components"]]
@@ -1306,3 +1454,4 @@ class ComponentData:
     example_flow_loop_4step_30_moles_of_CO2: ClassVar[List[Component]] = [Component(**c) for c in _data_example_flow_loop_4step_30_moles_of_CO2["components"]]
     Domagoj_3_ujutro: ClassVar[List[Component]] = [Component(**c) for c in _data_Domagoj_3_ujutro["components"]]
     data_zebanec2_study_2007: ClassVar[List[Component]] = [Component(**c) for c in _data_zebanec2_study_2007["components"]]
+    grubisno_polje: ClassVar[List[Component]] = [Component(**c) for c in _grubisno_polje["components"]]

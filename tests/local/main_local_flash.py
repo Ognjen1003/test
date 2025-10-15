@@ -19,25 +19,28 @@ print("sys.path:", sys.path)
 import eos_cpp 
 
 #u bin imas pyd file, to je dll sa zvanje iz cpp
-cplusplus = False                   # python mora imati istu verziju kao i pyd file (313 npr -> 3.13)
+cplusplus = False                   # python mora imati istu verziju kao i pyd file (313 npr -> 3.13), pazi da radi sa BIC, BIC True ne radi ovdje
 display_iterations = False          # samo iteracije nema veze sa negative flesh nuzno
 adjust_display_iterations = False   # prikazuje u razlicitm bojama nizi broj iteracija, bitno i za negativan flash
-toggle_phase_detect = False         # umjesto V pare daje sifru izlaza iz Rachford-Rice, isklucivo sa display_iterations
-is_BIC_used = True                  # provjeri koju matricu uopce upotrebljavas
+toggle_phase_detect = True         # umjesto V pare daje sifru izlaza iz Rachford-Rice, sa display_iterations, ostalo zgasi
+is_BIC_used = False                  # provjeri koju matricu uopce upotrebljavas
 
 
 # funkcije da izgleda urednije
-title_primer = "oxyfuel_comp1"  # za prikaz vise, nije elementarno
+title_primer = "oxyfuel_1 negative flash"  # za prikaz vise, nije elementarno
 components = ComponentData.oxyfuel_comp1 # podaci koji se actually prikazuju  
+
 if is_BIC_used:
-    BIC_coeff = ComponentDataBIC.data_oxyfuel_comp_1_2_3
+    BIC_coeff = ComponentDataBIC.grubisno
 else:
     BIC_coeff = None
 
 UtilClass.check_total_fraction(components, title_primer)
 
-temperatures = np.arange(250, 323, 1)  
-pressures = np.arange(1, 110, 1)      
+#data_nafta , wellstream etc, 250-540 K i 1-190 bara
+#oxyfuel itd 260-325 K i 1-100 bara
+temperatures = np.arange(190, 430, 1)  
+pressures = np.arange(1, 220, 1)      
 results = pd.DataFrame(index=pressures, columns=temperatures)
 resultsIteration = pd.DataFrame(index=pressures, columns=temperatures)
 if toggle_phase_detect:
@@ -68,8 +71,10 @@ else:
                 toggle_phase_detect,
                 BIC= BIC_coeff
                 ) 
-            results.at[Pp, Tt] = result["V"]
+            results.at[Pp, Tt] = Vint = result["V"]
             resultsIteration.at[Pp, Tt] = result["iteration"]
+            # if Vint is not None and Vint != -1.0 and Vint != 0:
+            #     print(f"V: {Vint}") 
             
             if toggle_phase_detect:
                 V_num = result["V"]
