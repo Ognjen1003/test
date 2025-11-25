@@ -1,23 +1,23 @@
 from Models.Component import Component
 from data.testData import ComponentData
-from src.Classes.EOS import PREnthalpyCalc
+from src.Classes.EOS.PREnthalpyCalc import PREnthalpyCalc
 
-
+#ovo je problem jer kod single phase slucaja RachfordRice.solve vrati -1
 components = []
 
-for comp in ComponentData.data["components"]:
+for comp in ComponentData.example_flow_loop:
     component = Component(
-        name=comp["name"],
-        formula=comp["formula"],
-        Mw=comp["Mw"],
-        Tc=comp["Tc"],
-        Pc=comp["Pc"],
-        omega=comp["omega"],
-        fraction=comp["fraction"],
-        CpA=comp["CpA"],
-        CpB=comp["CpB"],
-        CpC=comp["CpC"],
-        CpD=comp["CpD"]
+        name=comp.name,
+        formula=comp.formula,
+        Mw=comp.Mw,
+        Tc=comp.Tc,
+        Pc=comp.Pc,
+        omega=comp.omega,
+        fraction=comp.fraction,
+        CpA=comp.CpA,
+        CpB=comp.CpB,
+        CpC=comp.CpC,
+        CpD=comp.CpD
     )
     components.append(component)
 

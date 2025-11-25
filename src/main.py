@@ -6,7 +6,7 @@ from src.Models.FlowModels import FlowInputModel
 from src.Models.EOSModels import EOSInputModel
 from src.Classes.Logging.LoggerSingleton import LoggerSingleton
 from typing import List
-from Models.Component import Component
+from src.Models.Component import Component
 import pandas as pd
 
 #import sys

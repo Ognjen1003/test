@@ -1,8 +1,8 @@
 import numpy as np
 from typing import Sequence
-import EnumsClasses.MethodsAndTypes as MT
+import src.EnumsClasses.MethodsAndTypes as MT
 import src.Classes.UtilClass as Util
-from Models.Component import Component
+from src.Models.Component import Component
 
 class DensityClass:
 

@@ -1,6 +1,6 @@
 import src.Classes.UtilClass as Util
-import EnumsClasses.MethodsAndTypes as MT
-from Models.Component import Component
+import src.EnumsClasses.MethodsAndTypes as MT
+from src.Models.Component import Component
 from src.Classes.EOS import RachfordRice, PengRobinsonEOS, SRKEOS 
 from src.EnumsClasses import SolveMethod, EOSType
 import datetime

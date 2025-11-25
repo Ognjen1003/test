@@ -1,4 +1,4 @@
-import EnumsClasses.MethodsAndTypes as MT
+import src.EnumsClasses.MethodsAndTypes as MT
 import numpy as np
 from scipy.optimize import fsolve
 from numpy.ma.core import log10
@@ -18,7 +18,6 @@ from typing import List
 
 bin_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'bin'))
 sys.path.insert(0, bin_path)  # stavim ga kao prvi prioritet
-import EnumsClasses.MethodsAndTypes
 import eos_cpp 
 
 class Util:

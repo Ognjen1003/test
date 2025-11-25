@@ -2,7 +2,7 @@ from typing import List
 from scipy.optimize import root_scalar, fsolve
 from src.Models.Component import Component
 from src.Classes.EOS.EOSUtil import Calculations
-import EnumsClasses.MethodsAndTypes as MT
+import src.EnumsClasses.MethodsAndTypes as MT
 import numpy as np
 
 class RachfordRice:
