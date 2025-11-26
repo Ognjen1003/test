@@ -82,7 +82,7 @@ async def calculate_EOS(input_data: EOSInputModel, request: Request):
 @app.post("/compressor_calc")
 async def calculate_compressor_thermodynamics(input_data: CompressorInputModel, request: Request):
     
-    LoggerSingleton().log_info(f"eos_calc: Received input data from {request.client.host}: {input_data.model_dump()}")
+    LoggerSingleton().log_info(f"compressor_calc: Received input data from {request.client.host}: {input_data.model_dump()}")
 
     try:
 

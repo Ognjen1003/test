@@ -6,7 +6,7 @@ url1 = (
 )
 
 url2 = (
-    "https://test-production-f873.up.railway.app/compressor_calc"
+    "https://electroacoustic-junctional-perry.ngrok-free.dev/compressor_calc"
 )
 
 
@@ -18,14 +18,14 @@ data = {
     "P1": 1,                          # bar
     "P2": 10,                         # bar
     "mass_flow": 10,                  # kg/s
-    "isentropic_efficiency": 0.9,    # ηₛ
+    "isentropic_efficiency": 0.9,     # ηₛ
     "polytropic_efficiency": 1.3,     # ηₚ
     "NASA_9": "true",                 
     "full_report": 1,
-    "polytropic_exponent": 1.2                  # 1 = vrati puni report, 0 = sažetak
+    "polytropic_exponent": 1.2        # 1 = vrati puni report, 0 = sažetak
 }
 
-response = requests.post(url1, json=data)
+response = requests.post(url2, json=data)
 
 if response.status_code == 200:
     print("Proslo je")

@@ -13,58 +13,11 @@ import seaborn as sns
 import sys
 import os
 from typing import List
-from dataclasses import dataclass
-from typing import Dict
-from src.Models.Component import Component
 
 
 bin_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'bin'))
 sys.path.insert(0, bin_path)  # stavim ga kao prvi prioritet
 import eos_cpp 
-
-@dataclass
-class State:
-    p: float
-    T: float
-    h: float
-    s: float
-    v: float
-    z: Dict[str, float]
-
-@dataclass
-class GasMixture:
-    composition: List[Component]  # molni udjeli
-
-    def molar_mass(self) -> float:
-        """Mješovita molarna masa [kg/kmol]."""
-        M_mix = 0.0
-        for comp in self.composition:
-            M_mix += comp.fraction * comp.Mw
-        return M_mix
-
-    def cp(self) -> float:
-        """
-        Maseni cp smjese [kJ/(kg·K)].
-        Kombiniramo cp po molnim udjelima (aproksimacija).
-        """
-        cp_molar = 0.0  # [kJ/(kmol·K)]
-        for comp in self.composition:
-            cp_molar += comp.fraction * comp.Cp * comp.Mw  # cp_mass * M → cp_molar
-        M_mix = self.molar_mass()
-        cp_mass = cp_molar / M_mix            # [kJ/(kg·K)]
-        return cp_mass
-
-    def R(self) -> float:
-        """Specifična plinska konstanta smjese [kJ/(kg·K)]."""
-        M_mix = self.molar_mass()             # [kg/kmol]
-        return MT.CONSTANTS.R / M_mix                 # [kJ/(kg·K)]
-
-    def k(self) -> float:
-        """Omjer toplinskih kapaciteta k = cp/cv [-]."""
-        cp = self.cp()
-        R = self.R()
-        cv = cp - R
-        return cp / cv
 
 
 class Util:
