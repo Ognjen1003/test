@@ -1,5 +1,5 @@
 from typing import ClassVar, List
-from Models.Component import Component
+from src.Models.Component import Component
 
 class ComponentData:
     
@@ -161,10 +161,7 @@ class ComponentData:
                 "Pc": 73.866,
                 "omega": 0.225,
                 "fraction": 0.85,
-                "CpA": 22.26,
-                "CpB": 5.981e-3,
-                "CpC": -3.501e-6,
-                "CpD": 7469.0,
+                "Cp": 0.846,
             },
             {
                 "name": "O2",
@@ -174,10 +171,7 @@ class ComponentData:
                 "Pc": 50.43,
                 "omega": 0.0222,
                 "fraction": 0.0469,
-                "CpA": 29.10,
-                "CpB": 0,
-                "CpC": 0,
-                "CpD": 0,
+                "Cp": 0.918,
             },
             {
                 "name": "N2",
@@ -187,10 +181,7 @@ class ComponentData:
                 "Pc": 33.944,
                 "omega": 0.04,
                 "fraction": 0.058,
-                "CpA": 28.90,
-                "CpB": -0.0001571,
-                "CpC": 8.081e-7,
-                "CpD": 0.0,
+                "Cp": 1.04,
             },
             {
                 "name": "Ar",
@@ -200,10 +191,7 @@ class ComponentData:
                 "Pc": 48.63,
                 "omega": -0.004,
                 "fraction": 0.0447,
-                "CpA": 20.85,
-                "CpB": 0,
-                "CpC": 0,
-                "CpD": 0,
+                "Cp": 0.5203,
             },
             {
                 "name": "H2O",
@@ -213,10 +201,7 @@ class ComponentData:
                 "Pc": 220.64,
                 "omega": 0.344,
                 "fraction": 0.0001,
-                "CpA": 32.24,
-                "CpB": 0,
-                "CpC": 0,
-                "CpD": 0,
+                "Cp": 1.87,
             },
             {
                 "name": "NO",
@@ -226,10 +211,7 @@ class ComponentData:
                 "Pc": 64.0,
                 "omega": 0.584,
                 "fraction": 0.0001,
-                "CpA": 29.10,
-                "CpB": 0,
-                "CpC": 0,
-                "CpD": 0,
+                "Cp": 0.995,
             },
             {
                 "name": "SO2",
@@ -239,10 +221,7 @@ class ComponentData:
                 "Pc": 77.8,
                 "omega": 0.251,
                 "fraction": 0.00005,
-                "CpA": 40.0,
-                "CpB": 0,
-                "CpC": 0,
-                "CpD": 0,
+                "Cp": 0.64,
             },
             {
                 "name": "SO3",
@@ -252,10 +231,7 @@ class ComponentData:
                 "Pc": 83.0,
                 "omega": 0.315,
                 "fraction": 0.00005,
-                "CpA": 50.0,
-                "CpB": 0,
-                "CpC": 0,
-                "CpD": 0,
+                "Cp": 0.632,
             },
             {
                 "name": "CO",
@@ -265,10 +241,7 @@ class ComponentData:
                 "Pc": 34.94,
                 "omega": 0.045,
                 "fraction": 0.00005,
-                "CpA": 29.14,
-                "CpB": 0,
-                "CpC": 0,
-                "CpD": 0,
+                "Cp": 1.04,
             },
             {
                 "name": "H2S",
@@ -278,11 +251,34 @@ class ComponentData:
                 "Pc": 88.0,
                 "omega": 0.1,
                 "fraction": 0.00005,
-                "CpA": 34.0,
-                "CpB": 0,
-                "CpC": 0,
-                "CpD": 0,
+                "Cp": 0.243,
             },
+        ]
+    }
+
+    _gas_mixture_air = {
+        "components": [
+
+            {
+                "name": "O2",
+                "formula": "O2",
+                "Mw": 32.00,
+                "Tc": 154.6,
+                "Pc": 50.43,
+                "omega": 0.0222,
+                "fraction": 0.21,
+                "Cp": 0.918,
+            },
+            {
+                "name": "N2",
+                "formula": "N2",
+                "Mw": 28.013,
+                "Tc": 126.2,
+                "Pc": 33.944,
+                "omega": 0.04,
+                "fraction": 0.79,
+                "Cp": 1.04,
+            }
         ]
     }
 
@@ -1440,7 +1436,7 @@ class ComponentData:
     }
 
 
-
+    gas_mixture_air: ClassVar[List[Component]] = [Component(**c) for c in _gas_mixture_air["components"]]
     data_components: ClassVar[List[Component]] = [Component(**c) for c in _data["components"]]
     oxyfuel_comp1: ClassVar[List[Component]] = [Component(**c) for c in _data_oxyfuel_comp1["components"]]
     oxyfuel_comp1_original: ClassVar[List[Component]] = [Component(**c) for c in _data_oxyfuel_comp1_original["components"]]

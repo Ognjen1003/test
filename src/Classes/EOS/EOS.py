@@ -190,18 +190,6 @@ class EOSBase:
 
         return a_mix, b_mix, A, B
 
-        def cp_ideal(self, T: float) -> float:
-        # 1) cp smjese po molu
-        cp_molar = 0.0
-        for comp in self.components:
-            cp_molar += comp.fraction * comp.cp_ideal_molar(T)  # kJ/(kmol·K)
-
-        # 2) molna masa smjese
-        M_mix = self.mixture_molar_mass()  # kg/kmol
-
-        # 3) cp po masi
-        return cp_molar / M_mix  # kJ/(kg·K)
-
     def cp_ideal(self, T: float) -> float:
         # 1) cp smjese po molu
         cp_molar = 0.0
@@ -242,7 +230,6 @@ class EOSBase:
         """
         return self.s_ideal(T, p) + self.s_residual(p, T)
     
-
     def mixture_molar_mass(self) -> float:
         return sum(comp.fraction * comp.Mw for comp in self.components)
 

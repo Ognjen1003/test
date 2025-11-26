@@ -2,8 +2,10 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse, HTMLResponse
 from src.Endpoints.FlowModul import calculate_steps
 from src.Endpoints.EOSModul import perform_eos_calculation
+from src.Endpoints.CompressorModul import compressor_thermodynamics
 from src.Models.FlowModels import FlowInputModel
 from src.Models.EOSModels import EOSInputModel
+from src.Models.CompressionModel import CompressorInputModel
 from src.Classes.Logging.LoggerSingleton import LoggerSingleton
 from typing import List
 from src.Models.Component import Component
@@ -76,6 +78,34 @@ async def calculate_EOS(input_data: EOSInputModel, request: Request):
         raise HTTPException(status_code=500, detail=f"Exception main.py: {e}")
 
 
+#Compressor/thermodynamics calc
+@app.post("/compressor_calc")
+async def calculate_compressor_thermodynamics(input_data: CompressorInputModel, request: Request):
+    
+    LoggerSingleton().log_info(f"eos_calc: Received input data from {request.client.host}: {input_data.model_dump()}")
+
+    try:
+
+        result = compressor_thermodynamics(
+            fractions=input_data.fractions,
+            P1=input_data.P1,
+            P2=input_data.P2,
+            T1=input_data.T1,
+            mass_flow=input_data.mass_flow,
+            isentropic_efficiency=input_data.isentropic_efficiency,
+            polytropic_efficiency= input_data.polytropic_efficiency,
+            full_report= input_data.full_report,
+            polytropic_exponent = input_data.polytropic_exponent
+        )
+
+        return result
+
+    except ValueError as e:
+        LoggerSingleton().log_info(f"ValueError: Received input data from {request.client.host}: error: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        LoggerSingleton().log_info(f"Exception: Received input data from {request.client.host}: error: {e}")
+        raise HTTPException(status_code=500, detail=f"Exception main.py: {e}")
 
 ###############################################################
 #

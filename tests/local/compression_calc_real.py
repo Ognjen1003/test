@@ -1,19 +1,11 @@
-from dataclasses import dataclass
-from typing import Dict, Protocol, Callable, List
+from typing import Callable
 from data.testData import ComponentData
-from src.Classes.EOS import RachfordRice, PengRobinsonEOS, SRKEOS 
-import math
+from src.Classes.EOS import PengRobinsonEOS 
+from src.Classes.UtilClass import State
 
 
 
-@dataclass
-class State:
-    p: float
-    T: float
-    h: float
-    s: float
-    v: float
-    z: Dict[str, float]
+
 
 
 def build_state(p: float, T: float, eos: PengRobinsonEOS) -> State:
@@ -81,7 +73,7 @@ def solve_T_at_const_h(p: float, h_target: float, eos: PengRobinsonEOS,
                        T_min: float, T_max: float) -> float:
     """Nađi T tako da h(p, T, z) = h_target."""
     def f(T):
-        return eos.h(p, T, z) - h_target
+        return eos.h(p, T) - h_target
     return find_T_for_target(f, T_min, T_max)
 
 
@@ -123,12 +115,11 @@ def adiabatic_compression_real(
     T2s = solve_T_at_const_s(
         p=p2,
         s_target=s1,
-        z=z,
         eos=eos,
         T_min=T_bracket[0],
         T_max=T_bracket[1],
     )
-    st2s = build_state(p2, T2s, z, eos)
+    st2s = build_state(p2, T2s, eos)
 
     # 3) Idealni izentropski specifični rad
     w_s = st2s.h - st1.h   # [kJ/kg]
@@ -224,7 +215,6 @@ def polytropic_compression_real(
         T_iso = solve_T_at_const_s(
             p=p_new,
             s_target=s_old,
-            z=z,
             eos=eos,
             T_min=T_bracket[0],
             T_max=T_bracket[1],
@@ -246,7 +236,7 @@ def polytropic_compression_real(
             T_min=T_bracket[0],
             T_max=T_bracket[1],
         )
-        st = build_state(p_new, T_new, z, eos)
+        st = build_state(p_new, T_new, eos)
 
     st2 = st
 

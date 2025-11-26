@@ -2,9 +2,6 @@ import src.EnumsClasses.MethodsAndTypes as MT
 from pydantic import BaseModel
 import math
 
-
-
-
 class Component(BaseModel):
     name: str
     formula: str
@@ -13,11 +10,12 @@ class Component(BaseModel):
     Pc: float
     omega: float
     fraction: float
+    Cp: float | None = None 
 
     # NASA 7-coefficient polynomials
-    nasa_low: list[float]    # [a1..a7]
-    nasa_high: list[float]   # [a1..a7]
-    T_mid: float             # granica low→high (najčešće 1000 K)
+    nasa_low: list[float] | None = None    # [a1..a7]
+    nasa_high: list[float] | None = None   # [a1..a7]
+    T_mid: float | None = None             # granica low→high (najčešće 1000 K)
 
     def _get_nasa9_coeffs(self, T: float):
         """
@@ -99,7 +97,6 @@ class Component(BaseModel):
         s°(T,p) po MOLU [kJ/(kmol·K)] prema NASA-9.
         """
         a1, a2, a3, a4, a5, a6, a7, b1, b2 = self._get_nasa9_coeffs(T)
-        R_univ = 8.314462618  # kJ/(kmol·K)
 
         s_over_R_T = (
             -a1 * T**-2 / 2.0
@@ -114,7 +111,7 @@ class Component(BaseModel):
 
         # idealni plin → dodatni -ln(p/p_ref) u s/R
         s_over_R = s_over_R_T - math.log(p / pref)
-        return s_over_R * R_univ  # kJ/(kmol·K)
+        return s_over_R * MT.CONSTANTS.R  # kJ/(kmol·K)
 
     def s_ideal_mass(self, T: float, p: float, pref: float = 1e5) -> float:
         """

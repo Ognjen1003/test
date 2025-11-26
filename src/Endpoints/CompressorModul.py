@@ -1,70 +1,61 @@
-from dataclasses import dataclass
-from typing import Dict
-import math
+from src.Models.Component import Component
+from src.Classes.Flow.LookupTableSingleton import LookupTableSingleton 
+from src.EnumsClasses.MethodsAndTypes import CASES
+from src.Classes.UtilClass import GasMixture
+from src.Classes.UtilClass import Util
+from data.testData import ComponentData
+import warnings
+import datetime
+import sys
+import os
+from typing import List
 
-# ----------------------------------------------------------------------
-# 1. Baza podataka za pojedine plinove (jako pojednostavljeno!)
-#    M  [kg/kmol]
-#    cp [kJ/(kg·K)] – približne vrijednosti
-# ----------------------------------------------------------------------
+warnings.filterwarnings("ignore")
+sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 
-SPECIES_DB = {
-    "CO2": {"M": 44.01,   "cp": 0.846},
-    "O2":  {"M": 31.999,  "cp": 0.918},
-    "N2":  {"M": 28.0134, "cp": 1.04},
-    "Ar":  {"M": 39.948,  "cp": 0.5203},  # kJ/(kg·K) @ 300 K :contentReference[oaicite:0]{index=0}
-    "H2O": {"M": 18.015,  "cp": 1.87},    # “steam” ideal gas @ 300 K (tablica A-2) :contentReference[oaicite:1]{index=1}
-    "NO":  {"M": 30.006,  "cp": 0.995},   # ~20 °C, 1 atm :contentReference[oaicite:2]{index=2}
-    "SO2": {"M": 64.066,  "cp": 0.64},    # ~20 °C, 1 atm :contentReference[oaicite:3]{index=3}
-    "SO3": {"M": 80.063,  "cp": 0.632},   # iz NIST Cp(298 K)=50.63 J/molK → 0.632 kJ/kgK :contentReference[oaicite:4]{index=4}
-    "CO":  {"M": 28.01,   "cp": 1.04},    # @ 300 K, ista Wark/Kyle tablica kao za zrak itd. :contentReference[oaicite:5]{index=5}
-    "H2S": {"M": 34.076,  "cp": 0.243}    # ~20 °C, 1 atm 
-}
+def compressor_thermodynamics(fractions: List[float], P1: int, P2: int, T1:int, mass_flow: float, isentropic_efficiency: float, polytropic_efficiency: float, full_report: int, polytropic_exponent: float) -> str:
+    
+    gass_data = ComponentData.oxyfuel_comp1
 
-R_UNIV = 8.314  # kJ/(kmol·K)
+    for comp, frac in zip(gass_data, fractions):
+        comp.fraction = frac
+
+    Util.check_total_fraction(gass_data, "gass_data")
+
+    ideal_gas_calc = None
+    
+    if full_report == 1:
+        ideal_gas_calc = calc_ideal_gas_sanity_check(P1, P2, T1, mass_flow, isentropic_efficiency, gass_data, polytropic_exponent)
+
+    real_gas_calc = {"prvi":"22", "drugi": "22"}
+
+    if ideal_gas_calc is not None:
+        return {
+            "ideal": ideal_gas_calc,
+            "real": real_gas_calc
+        }
+    else: 
+        return real_gas_calc 
+                
 
 
-# ----------------------------------------------------------------------
-# 2. Klasa za smjesu idealnog plina
-#    composition: dict("komponenta": molni_udio)
-# ----------------------------------------------------------------------
+def calc_ideal_gas_sanity_check(P1: int, P2: int, T1: int, mass_flow: float, isentropic_efficiency: float, gass_data: List[Component], polytropic_exponent: float):
+    
+    gass = GasMixture(gass_data)
 
-@dataclass
-class GasMixture:
-    composition: Dict[str, float]  # molni udjeli
+    # Adijabatski (izentropski i stvarni s eta_s=0.8)
+    res_adiabatic = adiabatic_compression(P1, T1, P2, gass, mass_flow, isentropic_efficiency)
+    #print_adiabatic_results(P1, T1, P2, mass_flow, res_adiabatic)
 
-    def molar_mass(self) -> float:
-        """Mješovita molarna masa [kg/kmol]."""
-        M_mix = 0.0
-        for comp, z in self.composition.items():
-            sp = SPECIES_DB[comp]
-            M_mix += z * sp["M"]
-        return M_mix
-
-    def cp(self) -> float:
-        """
-        Maseni cp smjese [kJ/(kg·K)].
-        Kombiniramo cp po molnim udjelima (aproksimacija).
-        """
-        cp_molar = 0.0  # [kJ/(kmol·K)]
-        for comp, z in self.composition.items():
-            sp = SPECIES_DB[comp]
-            cp_molar += z * sp["cp"] * sp["M"]  # cp_mass * M → cp_molar
-        M_mix = self.molar_mass()
-        cp_mass = cp_molar / M_mix            # [kJ/(kg·K)]
-        return cp_mass
-
-    def R(self) -> float:
-        """Specifična plinska konstanta smjese [kJ/(kg·K)]."""
-        M_mix = self.molar_mass()             # [kg/kmol]
-        return R_UNIV / M_mix                 # [kJ/(kg·K)]
-
-    def k(self) -> float:
-        """Omjer toplinskih kapaciteta k = cp/cv [-]."""
-        cp = self.cp()
-        R = self.R()
-        cv = cp - R
-        return cp / cv
+    # Politropski (n=1.3)
+    res_poly = polytropic_compression(P1, T1, P2, gass, mass_flow, polytropic_exponent)
+    #print_polytropic_results(P1, T1, P2, mass_flow, n_poly, res_poly)
+    
+    
+    return {
+        "adiabatic_ideal": res_adiabatic,
+        "polytropic_ideal": res_poly
+    }
 
 
 # ----------------------------------------------------------------------
@@ -142,10 +133,10 @@ def polytropic_compression(
     """
     Politropska kompresija idealnog plina s eksponentom n (p v^n = const).
 
-    p1, p2  – tlakovi (u istim jedinicama, npr. bar ili Pa)
-    T1      – ulazna temperatura [K]
-    m_dot   – maseni protok [kg/s]
-    n       – politropski eksponent (između 1 i k)
+    p1, p2  tlakovi (u istim jedinicama, npr. bar ili Pa)
+    T1      ulazna temperatura [K]
+    m_dot   maseni protok [kg/s]
+    n       politropski eksponent (između 1 i k)
 
     Vraća dict sa: T2, h1, h2, w, P_MW, p_ratio.
     """
@@ -236,26 +227,3 @@ def print_polytropic_results(p1, T1, p2, m_dot, n, res):
     print(f"Maseni protok: {m_dot:.3f} kg/s")
     print(f"Snaga P:       {res['P_MW']:.4f} MW")
     print("==============================================\n")
-
-
-# ----------------------------------------------------------------------
-# 6. Primjer korištenja
-# ----------------------------------------------------------------------
-if __name__ == "__main__":
-    # smjesa npr. zraka ~ 79% N2, 21% O2
-    #gass = GasMixture(composition={"N2": 0.79, "O2": 0.21})
-    gass = GasMixture(composition={"CO2":0.85,"O2":0.0469, "N2":0.058, "Ar":0.0447, "H2O":0.0001, "NO":0.0001, "SO2":0.00005, "SO3":0.00005, "CO":0.00005, "H2S":0.00005})
-
-    p1 = 1.0     # npr. bar
-    T1 = 300.0   # K
-    p2 = 10.0    # bar
-    m_dot = 10.0 # kg/s
-
-    # Adijabatski (izentropski i stvarni s eta_s=0.8)
-    res_adiabatic = adiabatic_compression(p1, T1, p2, gass, m_dot, eta_s=0.9)
-    print_adiabatic_results(p1, T1, p2, m_dot, res_adiabatic)
-
-    # Politropski (n=1.3)
-    n_poly = 1.2
-    res_poly = polytropic_compression(p1, T1, p2, gass, m_dot, n=n_poly)
-    print_polytropic_results(p1, T1, p2, m_dot, n_poly, res_poly)
