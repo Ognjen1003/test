@@ -64,4 +64,13 @@ config yaml: usual places, refer code sa ngrok.com
     Windows: "%HOMEPATH%\AppData\Local\ngrok\ngrok.yml"
 
 
+ngrok yaml
+version: "3"
+agent:
+    authtoken: 35ki1idE7L8dVZHJNkbFDTvtlbn_FYRjWdiDfVZy7Vrp6X4A
+    connect_url: connect.us.ngrok-agent.com:443
 
+tunnels:
+  myapp:
+    proto: http
+    addr: 8000
