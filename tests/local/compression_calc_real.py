@@ -1,7 +1,18 @@
-from typing import Callable
+from typing import Dict, Callable
 from data.testData import ComponentData
 from src.Classes.EOS import PengRobinsonEOS 
-from src.Classes.UtilClass import State
+from dataclasses import dataclass
+
+
+
+@dataclass
+class State:
+    p: float
+    T: float
+    h: float
+    s: float
+    v: float
+    z: Dict[str, float]
 
 
 
@@ -12,8 +23,7 @@ def build_state(p: float, T: float, eos: PengRobinsonEOS) -> State:
     """Iz tlaka, temperature i kompozicije izgradi kompletno stanje."""
     h = eos.h(p, T)
     s = eos.s(p, T)
-    v = eos.v(p, T)
-    return State(p=p, T=T, h=h, s=s, v=v, z=eos.components)
+    return State(p=p, T=T, h=h, s=s, v=None, z=eos.components)
 
 
 # ================================================================
@@ -136,7 +146,7 @@ def adiabatic_compression_real(
         T_min=T_bracket[0],
         T_max=T_bracket[1],
     )
-    st2 = build_state(p2, T2, z, eos)
+    st2 = build_state(p2, T2, eos)
 
     # 5) Snaga
     P_s_kW = m_dot * w_s          # [kW]
@@ -286,3 +296,6 @@ if __name__ == "__main__":
 
     # Politropska kompresija (politropska učinkovitost 0.75)
     res_poly = polytropic_compression_real(P1, T1, p2, m_dot, eos, eta_p=0.75)
+
+    print(res_ad)
+    print(res_poly)

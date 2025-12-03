@@ -1,12 +1,7 @@
 import src.EnumsClasses.MethodsAndTypes as MT
 import numpy as np
-from scipy.optimize import fsolve
-from numpy.ma.core import log10
 import pandas as pd
-from scipy.interpolate import griddata
-import CoolProp.CoolProp as CP
-from numba import jit
-from matplotlib.colors import ListedColormap, BoundaryNorm
+from matplotlib.colors import ListedColormap
 from matplotlib.patches import Patch
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -45,11 +40,7 @@ class Util:
                     c.Tc,
                     c.Pc,
                     c.omega,
-                    c.fraction,
-                    c.CpA,
-                    c.CpB,
-                    c.CpC,
-                    c.CpD
+                    c.fraction
                 )
             )
         return cpp_list     

@@ -15,14 +15,18 @@ class Component(BaseModel):
     # NASA 7-coefficient polynomials
     nasa_low: list[float] | None = None    # [a1..a7]
     nasa_high: list[float] | None = None   # [a1..a7]
-    T_mid: float | None = None             # granica low→high (najčešće 1000 K)
+    nasa_mid: float | None = None             # granica low→high (najčešće 1000 K)
 
     def _get_nasa9_coeffs(self, T: float):
         """
         Vrati (a1..a7, b1, b2) za zadanu temperaturu T
         iz low ili high seta, ovisno o T_mid.
         """
-        if T <= self.T_mid:
+
+        if self.nasa_mid is None:
+            a1, a2, a3, a4, a5, a6, a7, b1, b2 = self.nasa_low
+
+        if T <= self.nasa_mid:
             a1, a2, a3, a4, a5, a6, a7, b1, b2 = self.nasa_low
         else:
             a1, a2, a3, a4, a5, a6, a7, b1, b2 = self.nasa_high

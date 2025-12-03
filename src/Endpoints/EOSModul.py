@@ -1,8 +1,8 @@
-import src.Classes.UtilClass as Util
 import src.EnumsClasses.MethodsAndTypes as MT
 from src.Models.Component import Component
 from src.Classes.EOS import RachfordRice, PengRobinsonEOS, SRKEOS 
 from src.EnumsClasses import SolveMethod, EOSType
+from src.Classes.UtilClass import Util
 import datetime
 import numpy as np
 from typing import List

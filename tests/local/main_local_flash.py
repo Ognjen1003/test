@@ -1,14 +1,11 @@
 from src.Endpoints.EOSModul import perform_eos_calculation
-from Models.Component import Component
-from src.Classes import UtilClass
+from src.Classes.UtilClass import Util
 from data.testData import ComponentData
 from data.testDataBIC import ComponentDataBIC
 import src.EnumsClasses.MethodsAndTypes as MT
 import pandas as pd
 import numpy as np
-import time
-import sys
-import os
+import time, sys, os
 
 bin_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'bin'))
 sys.path.insert(0, bin_path)  # stavim ga kao prvi prioritet
@@ -22,20 +19,20 @@ import eos_cpp
 cplusplus = False                   # python mora imati istu verziju kao i pyd file (313 npr -> 3.13), pazi da radi sa BIC, BIC True ne radi ovdje
 display_iterations = False          # samo iteracije nema veze sa negative flesh nuzno
 adjust_display_iterations = False   # prikazuje u razlicitm bojama nizi broj iteracija, bitno i za negativan flash
-toggle_phase_detect = True         # umjesto V pare daje sifru izlaza iz Rachford-Rice, sa display_iterations, ostalo zgasi
+toggle_phase_detect = False         # umjesto V pare daje sifru izlaza iz Rachford-Rice, sa display_iterations, ostalo zgasi
 is_BIC_used = False                  # provjeri koju matricu uopce upotrebljavas
 
 
 # funkcije da izgleda urednije
-title_primer = "oxyfuel_1 negative flash"  # za prikaz vise, nije elementarno
-components = ComponentData.oxyfuel_comp1 # podaci koji se actually prikazuju  
+title_primer = "data_components"  # za prikaz vise, nije elementarno
+components = ComponentData.data_components # podaci koji se actually prikazuju  
 
 if is_BIC_used:
     BIC_coeff = ComponentDataBIC.grubisno
 else:
     BIC_coeff = None
 
-UtilClass.check_total_fraction(components, title_primer)
+Util.check_total_fraction(components, title_primer)
 
 #data_nafta , wellstream etc, 250-540 K i 1-190 bara
 #oxyfuel itd 260-325 K i 1-100 bara
@@ -78,7 +75,7 @@ else:
             
             if toggle_phase_detect:
                 V_num = result["V"]
-                phase = UtilClass.get_phase(V_num)
+                phase = Util.get_phase(V_num)
                 if phase == MT.Phase.LIQUID:
                     Vl = 1 
                     Vp = 0
@@ -110,7 +107,7 @@ if not display_iterations:
 else:
     results_display = resultsIteration.astype(int)
 
-UtilClass.display(temperatures, pressures, results_display, title_primer, adjust_display_iterations)
+Util.display(temperatures, pressures, results_display, title_primer, adjust_display_iterations)
 
 
 

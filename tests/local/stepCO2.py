@@ -120,10 +120,6 @@ def calculate_pressure_from_eos(df_input, T_K, V_m3):
                 Pc=comp.Pc * 1e5,  #Pa
                 omega=comp.omega,
                 fraction=row["Mol [mol]"] / df_input["Mol [mol]"].sum(),
-                CpA=comp.CpA,
-                CpB=comp.CpB,
-                CpC=comp.CpC,
-                CpD=comp.CpD
             )
             component_objs.append(c_new)
 

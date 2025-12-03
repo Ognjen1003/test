@@ -218,7 +218,7 @@ class EOSBase:
         M_mix = self.mixture_molar_mass()
         return s_molar / M_mix  # kJ/(kg·K)
 
-    def h(self, p: float, T: float, z: List[float]) -> float:
+    def h(self, p: float, T: float) -> float:
         """
         Ukupna entalpija = idealni + residual
         """

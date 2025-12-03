@@ -82,7 +82,7 @@ class PengRobinsonEOS(EOSBase):
 
         return hR_mass
     
-    def s_residual(self, p: float, T: float, z: List[float]) -> float:
+    def s_residual(self, p: float, T: float) -> float:
         """
         Peng–Robinson entropy departure s^R [kJ/(kg·K)]
         """

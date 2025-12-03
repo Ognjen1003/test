@@ -12,8 +12,8 @@ sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 
 def compressor_thermodynamics(fractions: List[float], P1: int, P2: int, T1:int, mass_flow: float, isentropic_efficiency: float, polytropic_efficiency: float, full_report: int, polytropic_exponent: float) -> str:
     
-    TIMEFORMAT = "%H:%M:%S"
-    print(f'start {datetime.datetime.now().strftime(TIMEFORMAT)}')  
+    # TIMEFORMAT = "%H:%M:%S"
+    # print(f'start {datetime.datetime.now().strftime(TIMEFORMAT)}')  
     
     gass_data = get_and_check_data(fractions)
 
@@ -24,11 +24,13 @@ def compressor_thermodynamics(fractions: List[float], P1: int, P2: int, T1:int, 
         #CompressorThermo.Ideal.print_adiabatic_results(P1, T1, P2, mass_flow, isentropic_efficiency, ideal_gas_calc["adiabatic_ideal"])
         #CompressorThermo.Ideal.print_polytropic_results(P1, T1, P2, mass_flow, polytropic_exponent, ideal_gas_calc["polytropic_ideal"])
 
-    real_gas_calc = {"prvi":"22", "drugi": "22"}
+    real_gas_calc = CompressorThermo.Real.calc_real_gas_thermo(P1, P2, T1, mass_flow, isentropic_efficiency, polytropic_exponent, gass_data)
+    #CompressorThermo.Real.print_adiabatic_results(P1, T1, P2, mass_flow, isentropic_efficiency, ideal_gas_calc["adiabatic_ideal"])
+    #CompressorThermo.Real.print_polytropic_results(P1, T1, P2, mass_flow, polytropic_exponent, ideal_gas_calc["polytropic_ideal"])
 
-    print(f'end {datetime.datetime.now().strftime(TIMEFORMAT)}') 
+    # print(f'end {datetime.datetime.now().strftime(TIMEFORMAT)}') 
 
-    if ideal_gas_calc is not None:
+    if full_report == 1:
         return {
             "ideal": ideal_gas_calc,
             "real": real_gas_calc
