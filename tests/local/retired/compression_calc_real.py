@@ -359,7 +359,7 @@ if __name__ == "__main__":
     components = ComponentData.oxyfuel_comp1
     P1 = 1.0      # npr. bar
     T1 = 300.0    # K
-    p2 = 100.0    # bar
+    p2 = 10.0    # bar
     m_dot = 10.0  # kg/s
 
     eos = PengRobinsonEOS(components, T1, P1)
@@ -368,9 +368,9 @@ if __name__ == "__main__":
     res_ad = adiabatic_compression_real(P1, T1, p2, m_dot, eos, eta_s=0.8)
 
     # Politropska kompresija (politropska učinkovitost 0.75)
-    res_poly = polytropic_compression_real(P1, T1, p2, m_dot, eos, eta_p=0.75)
+    res_poly = polytropic_compression_real(P1, T1, p2, m_dot, eos, eta_p=0.9)
 
     print_adiabatic_results(P1, T1, p2, m_dot, 0.8, res_ad )
-    print_polytropic_results(P1, T1, p2, m_dot, 0.75, res_poly )
+    print_polytropic_results(P1, T1, p2, m_dot, 0.9, res_poly )
 
 

@@ -30,13 +30,18 @@ def compressor_thermodynamics(fractions: List[float], P1: int, P2: int, T1:int, 
 
     # print(f'end {datetime.datetime.now().strftime(TIMEFORMAT)}') 
 
-    if full_report == 1:
-        return {
+    match full_report:
+        case 1:
+            return {
             "ideal": ideal_gas_calc,
-            "real": real_gas_calc
-        }
-    else: 
-        return real_gas_calc 
+            "real": real_gas_calc }
+        case 2:
+            real_ad    = real_gas_calc["adiabatic_real"]
+            real_poly  = real_gas_calc["polytropic_real"] 
+            return f"Adiabatic P: {real_ad['P_MW']} MW, W: {real_ad['w_actual']:.3f} kJ/kg | Polytropic P: {real_poly['P_MW']} MW, W: {real_poly['w']:.3f} kJ/kg"
+        case _:
+            return real_gas_calc
+
 
 def get_and_check_data(fractions: List[float]):
     gass_data = ComponentData.oxyfuel_comp1

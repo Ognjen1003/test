@@ -231,8 +231,8 @@ class CompressorThermo:
             #CompressorThermo.Real.print_polytropic_results(P1, T1, P2, m_dot, polytropic_efficiency, res_poly )
             
             return {
-                "adiabatic_ideal": res_ad,
-                "polytropic_ideal": res_poly
+                "adiabatic_real": res_ad,
+                "polytropic_real": res_poly
             }
 
 
@@ -340,7 +340,7 @@ class CompressorThermo:
                 s_target=s1,
                 eos=eos,
                 T_min=T_bracket[0],
-                T_max=T_bracket[1],
+                T_max=T_bracket[1]
             )
             st2s = CompressorThermo.Real.build_state(p2, T2s, eos)
 
@@ -401,20 +401,23 @@ class CompressorThermo:
             - w_total = h2 - h1 (zbroj Δh_actual)
 
             Parametri:
-            p1, p2   – početni i krajnji tlak
-            T1       – početna temperatura [K]
-            z        – kompozicija smjese
-            m_dot    – maseni protok [kg/s]
-            eos      – PR/GERG model
-            eta_p    – politropska učinkovitost kompresora (0–1)
-            n_steps  – broj diskretnih koraka po tlaku
-            T_bracket – interval za traženje T po koracima
+            p1, p2    početni i krajnji tlak
+            T1        početna temperatura [K]
+            z         kompozicija smjese
+            m_dot     maseni protok [kg/s]
+            eos       PR/GERG model
+            eta_p     politropska učinkovitost kompresora (0-1)
+            n_steps   broj diskretnih koraka po tlaku
+            T_bracket  interval za traženje T po koracima
 
             Vraća dict s ukupnim radom, snagom i početnim/završnim stanjem.
             """
 
             if not (0 < eta_p <= 1.0):
                 raise ValueError("eta_p treba biti u intervalu (0, 1].")
+            
+            if p2 < p1:
+                raise ValueError("p2 teba biti vece od p1")
 
             # 1) Početno stanje
             st = CompressorThermo.Real.build_state(p1, T1, eos)

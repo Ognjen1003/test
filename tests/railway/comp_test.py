@@ -1,5 +1,4 @@
 import requests
-import json
 
 url1 = (
     "http://127.0.0.1:8000/compressor_calc"
@@ -10,25 +9,107 @@ url2 = (
 )
 
 
+mass_flow = 10  # kg/s
+full_report = 1 # - 1: full, 2: compact, real gass, 3: real gass results
+
 # molar fractions CO2, O2, N2, Ar, H2O, NO, SO2, SO3, CO, H2S 
-mass_flow = 10
 data = {
     "fractions": [0.85, 0.0469, 0.058, 0.0447, 0.0001, 0.0001, 0.00005, 0.00005, 0.00005, 0.00005],   # molni udjeli smjese
     "T1": 300.0,                      # K
     "P1": 1,                          # bar
     "P2": 10,                         # bar
-    "mass_flow": mass_flow,            # kg/s
+    "mass_flow": mass_flow,           # kg/s
     "isentropic_efficiency": 0.9,     # ηₛ
     "polytropic_efficiency": 0.9,     # ηₚ
     "NASA_9": "true",                 
-    "full_report": 1,
+    "full_report": full_report,
     "polytropic_exponent": 1.1        # 1 = vrati puni report, 0 = sažetak
 }
 
 response = requests.post(url1, json=data)
 
+def print_compression_results(results: dict) -> None:
+    """
+    Lijepo formatirani ispis rezultata za adijabatsku i politropsku kompresiju.
+    Očekuje rječnik strukture poput 'adiabatic_real' / 'polytropic_real' iz tvog primjera.
+    """
 
-def print_full_compression_results(res_all: dict, m_dot: float) -> None:
+    def print_state(header: str, state: dict) -> None:
+        p = state["p"]
+        T = state["T"]
+        h = state["h"]
+        s = state["s"]
+        v = state["v"]
+
+        print(f"\n  {header}")
+        print(f"    Tlak p           : {p:.4f} bar")
+        print(f"    Temperatura T    : {T:.4f} K")
+        print(f"    Entalpija h      : {h:.4f} kJ/kg")
+        print(f"    Entropija s      : {s:.6f} kJ/(kg·K)")
+        print(f"    Spec. volumen v  : {v}")
+
+
+    # === ADIJABATSKA KOMpresija (stvarna) ===
+    ad = results["adiabatic_real"]
+    ad_state1   = ad["state1"]
+    ad_state2s  = ad["state2s"]   # izlaz u idealno adijabatskom (izoentropskom) slučaju
+    ad_state2   = ad["state2"]    # stvarni izlaz
+    ad_w_s      = ad["w_s"]
+    ad_w_actual = ad["w_actual"]
+    ad_Ps_MW    = ad["P_s_MW"]
+    ad_P_MW     = ad["P_MW"]
+    ad_p_ratio  = ad["p_ratio"]
+    ad_eta_s    = ad["eta_s"]
+
+    print("    Sastav plina (z):")
+    print("      {:<8}  {:>12} {:>10}".format("Ime", "Udjel [-]", "Cp [kJ/kgK]"))
+    for comp in ad_state1["z"]:
+        name = comp["name"]
+        frac = comp["fraction"]
+        cp = comp["Cp"]
+        print("      {:<8}  {:>12.6f} {:>10.4f}".format(name, frac, cp))
+
+    print("\n========================================")
+    print(" ADIJABATSKA KOMPRESIJA (stvarna)")
+    print("========================================")
+    print(f" Maseni protok                 : {mass_flow} kg/s")
+    print(f" Omjer tlakova p2/p1           : {ad_p_ratio:.4f} [-]")
+    print(f" Spec. rad (idealno, w_s)      : {ad_w_s:.4f} kJ/kg")
+    print(f" Spec. rad (stvarno, w_actual) : {ad_w_actual:.4f} kJ/kg")
+    print(f" Snaga idealna P_s             : {ad_Ps_MW:.6f} MW")
+    print(f" Snaga stvarna P               : {ad_P_MW:.6f} MW")
+    print(f" Izentropski stupanj η_s       : {ad_eta_s:.4f} [-]")
+
+    print_state("Ulazno stanje (state1)", ad_state1)
+    print_state("Izlazno stanje idealno izentropski (state2s)", ad_state2s)
+    print_state("Izlazno stanje stvarno (state2)", ad_state2)
+
+    # === POLITROPSKA KOMpresija (stvarna) ===
+    pol = results["polytropic_real"]
+    pol_state1  = pol["state1"]
+    pol_state2  = pol["state2"]
+    pol_w       = pol["w"]
+    pol_P_MW    = pol["P_MW"]
+    pol_p_ratio = pol["p_ratio"]
+    pol_eta_p   = pol["eta_p"]
+    pol_n_steps = pol["n_steps"]
+
+    print("\n========================================")
+    print(" POLITROPSKA KOMPRESIJA (stvarna)")
+    print("========================================")
+    print(f" Omjer tlakova p2/p1        : {pol_p_ratio:.4f} [-]")
+    print(f" Spec. rad w                : {pol_w:.4f} kJ/kg")
+    print(f" Snaga P                    : {pol_P_MW:.6f} MW")
+    print(f" Politropski stupanj η_p    : {pol_eta_p:.4f} [-]")
+    print(f" Broj diskretnih koraka N   : {pol_n_steps:d} [-]")
+
+    print_state("Ulazno stanje (state1)", pol_state1)
+    print_state("Izlazno stanje politropski (state2)", pol_state2)
+    print()  # završni prazni red
+
+
+
+def print_full_compression_results(res_all: dict) -> None:
     """
     Lijep ispis rezultata iz odgovora API-ja, s jasnim razdvajanjem:
       - TERMODINAMIČKI MODEL (idealni plin / realni plin PR EOS)
@@ -53,8 +134,8 @@ def print_full_compression_results(res_all: dict, m_dot: float) -> None:
     ideal_ad   = res_all["ideal"]["adiabatic_ideal"]
     ideal_poly = res_all["ideal"]["polytropic_ideal"]
 
-    real_ad    = res_all["real"]["adiabatic_ideal"]
-    real_poly  = res_all["real"]["polytropic_ideal"]
+    real_ad    = res_all["real"]["adiabatic_real"]
+    real_poly  = res_all["real"]["polytropic_real"]
 
     # Realni adijabatski slučaj ima kompletna stanja -> koristimo ih za p1, p2, T1
     st1_r   = real_ad["state1"]
@@ -71,7 +152,7 @@ def print_full_compression_results(res_all: dict, m_dot: float) -> None:
     # Efektivna izentropska učinkovitost iz idealnog i realnog (samo info)
     eta_s_ideal = ideal_ad["w_s"] / ideal_ad["w_actual"] if ideal_ad["w_actual"] != 0 else float("nan")
     eta_s_real  = real_ad["w_s"]  / real_ad["w_actual"]  if real_ad["w_actual"]  != 0 else float("nan")
-    polytropic_exponent = ideal_ad["n"]
+    polytropic_exponent = ideal_poly["n"]
 
     # ==========================
     # 2) ADIJABATSKA – IDEALNI PLIN
@@ -110,7 +191,7 @@ def print_full_compression_results(res_all: dict, m_dot: float) -> None:
     print(f"        w_actual,ideal:         {ideal_ad['w_actual']:.3f} kJ/kg")
     print("      Snaga realnog stroja (na temelju idealnog plina):")
     print(f"        P_actual,ideal:         {ideal_ad['P_MW']:.4f} MW")
-    print(f"      Maseni protok ṁ:         {m_dot:.3f} kg/s")
+    print(f"      Maseni protok ṁ:         {mass_flow:.3f} kg/s")
     print("====================================================\n")
 
     # ==========================
@@ -147,7 +228,7 @@ def print_full_compression_results(res_all: dict, m_dot: float) -> None:
     print(f"        w_actual,real:          {real_ad['w_actual']:.3f} kJ/kg")
     print("      Snaga realnog stroja (na temelju realnog plina):")
     print(f"        P_actual,real:          {real_ad['P_MW']:.4f} MW")
-    print(f"      Maseni protok ṁ:         {m_dot:.3f} kg/s")
+    print(f"      Maseni protok ṁ:         {mass_flow:.3f} kg/s")
     print("====================================================\n")
 
 
@@ -179,7 +260,7 @@ def print_full_compression_results(res_all: dict, m_dot: float) -> None:
     print("      Specifični rad politropske kompresije – idealni plin:")
     print(f"        w,ideal:               {ideal_poly['w']:.3f} kJ/kg")
     print(f"      Snaga P,ideal:           {ideal_poly['P_MW']:.4f} MW")
-    print(f"      Maseni protok ṁ:        {m_dot:.3f} kg/s")
+    print(f"      Maseni protok ṁ:        {mass_flow:.3f} kg/s")
     print("====================================================\n")
 
     # ==========================
@@ -209,7 +290,7 @@ def print_full_compression_results(res_all: dict, m_dot: float) -> None:
     print("      Specifični rad politropske kompresije – realni plin:")
     print(f"        w,real:                {real_poly['w']:.3f} kJ/kg")
     print(f"      Snaga P,real:            {real_poly['P_MW']:.4f} MW")
-    print(f"      Maseni protok ṁ:        {m_dot:.3f} kg/s")
+    print(f"      Maseni protok ṁ:        {mass_flow:.3f} kg/s")
     print("====================================================\n")
 
 
@@ -239,14 +320,18 @@ def print_full_compression_results(res_all: dict, m_dot: float) -> None:
 
 
 
-
-
-
-
 if response.status_code == 200:
     #print("Proslo je")
     #print("Response:", response.json())
-    print_full_compression_results(response.json(), mass_flow)
+    
+    match full_report:
+        case 1:
+            print_full_compression_results(response.json())
+        case 2:
+            print(response.json())
+        case _:
+            print_compression_results(response.json())
+
 else:
     print(f"Greska: {response.status_code}")
     print("Response:", response.text)
