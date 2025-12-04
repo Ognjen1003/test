@@ -248,11 +248,11 @@ if __name__ == "__main__":
 
     p1 = 1.0     # npr. bar
     T1 = 300.0   # K
-    p2 = 10.0    # bar
+    p2 = 100.0    # bar
     m_dot = 10.0 # kg/s
 
     # Adijabatski (izentropski i stvarni s eta_s=0.8)
-    res_adiabatic = adiabatic_compression(p1, T1, p2, gass, m_dot, eta_s=0.9)
+    res_adiabatic = adiabatic_compression(p1, T1, p2, gass, m_dot, eta_s=0.8)
     print_adiabatic_results(p1, T1, p2, m_dot, res_adiabatic)
 
     # Politropski (n=1.3)

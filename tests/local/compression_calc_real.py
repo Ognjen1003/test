@@ -16,9 +16,6 @@ class State:
 
 
 
-
-
-
 def build_state(p: float, T: float, eos: PengRobinsonEOS) -> State:
     """Iz tlaka, temperature i kompozicije izgradi kompletno stanje."""
     h = eos.h(p, T)
@@ -266,6 +263,82 @@ def polytropic_compression_real(
     }
 
 
+
+def print_adiabatic_results(p1, T1, p2, m_dot, eta_s, res):
+    st1 = res["state1"]
+    st2s = res["state2s"]
+    st2 = res["state2"]
+
+    print("\n====================================================")
+    print(" ADIJABATSKA KOMPRESIJA REALNOG PLINA (PR EOS)")
+    print("====================================================\n")
+
+    print("► Ulazni parametri:")
+    print(f"  - Ulazni tlak p1:                 {p1:.3f} bar")
+    print(f"  - Izlazni tlak p2:                {p2:.3f} bar")
+    print(f"  - Omjer tlakova p2/p1:            {res['p_ratio']:.3f} [-]")
+    print(f"  - Ulazna temperatura T1:          {T1:.2f} K   ({T1 - 273.15:.2f} °C)")
+    print(f"  - Maseni protok ṁ:               {m_dot:.3f} kg/s")
+    print(f"  - Izentropski stupanj η_s:        {eta_s:.3f}\n")
+
+    print("► Stanja izračunata EOS-om:")
+    print(f"  - Izentropska izlazna T2s:        {st2s.T:.2f} K   ({st2s.T - 273.15:.2f} °C)")
+    print(f"  - Stvarna izlazna temperatura T2: {st2.T:.2f} K   ({st2.T - 273.15:.2f} °C)\n")
+
+    print("► Entalpije (apsolutna razina proizvoljna):")
+    print(f"  - h1  (ulaz):                     {st1.h:.3f} kJ/kg")
+    print(f"  - h2s (idealno izentropski):      {st2s.h:.3f} kJ/kg")
+    print(f"  - h2  (stvarni proces):           {st2.h:.3f} kJ/kg\n")
+
+    print("► Specifični rad kompresije:")
+    print(f"  - w_s      (idealni, izentropski): {res['w_s']:.3f} kJ/kg")
+    print(f"  - w_actual (stvarni):              {res['w_actual']:.3f} kJ/kg\n")
+
+    print("► Snaga kompresora:")
+    print(f"  - Idealna snaga P_s:               {res['P_s_MW']:.4f} MW")
+    print(f"  - Stvarna snaga  P:                {res['P_MW']:.4f} MW")
+    print("====================================================\n")
+
+
+
+def print_polytropic_results(p1, T1, p2, m_dot, eta_p, res):
+    st1 = res["state1"]
+    st2 = res["state2"]
+
+    print("\n====================================================")
+    print(" POLITROPSKA KOMPRESIJA REALNOG PLINA (PR EOS)")
+    print("====================================================\n")
+
+    print("► Ulazni parametri:")
+    print(f"  - Ulazni tlak p1:                  {p1:.3f} bar")
+    print(f"  - Izlazni tlak p2:                 {p2:.3f} bar")
+    print(f"  - Omjer tlakova p2/p1:             {res['p_ratio']:.3f} [-]")
+    print(f"  - Ulazna temperatura T1:           {T1:.2f} K ({T1 - 273.15:.2f} °C)")
+    print(f"  - Maseni protok ṁ:                {m_dot:.3f} kg/s")
+    print(f"  - Politropska učinkovitost η_p:    {eta_p:.3f}")
+    print(f"  - Broj diskretizacijskih koraka:   {res['n_steps']}\n")
+
+    print("► Rezultati stanja:")
+    print(f"  - Izlazna temperatura T2:          {st2.T:.2f} K ({st2.T - 273.15:.2f} °C)")
+
+    print("\n► Entalpije (prema EOS):")
+    print(f"  - h1 (ulaz):                       {st1.h:.3f} kJ/kg")
+    print(f"  - h2 (izlaz):                      {st2.h:.3f} kJ/kg")
+
+    print("\n► Specifični rad politropske kompresije:")
+    print(f"  - w_total:                         {res['w']:.3f} kJ/kg")
+
+    print("\n► Snaga kompresora:")
+    print(f"  - P:                               {res['P_MW']:.4f} MW")
+
+    print("====================================================\n")
+
+
+
+
+
+
+
 # ================================================================
 # 6) Primjer kako bi se to koristilo (pseudo, jer EOS ti već imaš)
 # ================================================================
@@ -297,5 +370,7 @@ if __name__ == "__main__":
     # Politropska kompresija (politropska učinkovitost 0.75)
     res_poly = polytropic_compression_real(P1, T1, p2, m_dot, eos, eta_p=0.75)
 
-    print(res_ad)
-    print(res_poly)
+    print_adiabatic_results(P1, T1, p2, m_dot, 0.8, res_ad )
+    print_polytropic_results(P1, T1, p2, m_dot, 0.75, res_poly )
+
+

@@ -24,7 +24,7 @@ def compressor_thermodynamics(fractions: List[float], P1: int, P2: int, T1:int, 
         #CompressorThermo.Ideal.print_adiabatic_results(P1, T1, P2, mass_flow, isentropic_efficiency, ideal_gas_calc["adiabatic_ideal"])
         #CompressorThermo.Ideal.print_polytropic_results(P1, T1, P2, mass_flow, polytropic_exponent, ideal_gas_calc["polytropic_ideal"])
 
-    real_gas_calc = CompressorThermo.Real.calc_real_gas_thermo(P1, P2, T1, mass_flow, isentropic_efficiency, polytropic_exponent, gass_data)
+    real_gas_calc = CompressorThermo.Real.calc_real_gas_thermo(P1, P2, T1, mass_flow, isentropic_efficiency, polytropic_efficiency, gass_data)
     #CompressorThermo.Real.print_adiabatic_results(P1, T1, P2, mass_flow, isentropic_efficiency, ideal_gas_calc["adiabatic_ideal"])
     #CompressorThermo.Real.print_polytropic_results(P1, T1, P2, mass_flow, polytropic_exponent, ideal_gas_calc["polytropic_ideal"])
 
