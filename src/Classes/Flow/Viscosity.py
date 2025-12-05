@@ -32,7 +32,7 @@ class ViscosityClass:
         - epsilon/k ~ 1.2593 * Tc / Zc^(2/3)  (K)
         """
         Tc = component.Tc          # K
-        Pc_bar = component.Pc      # bar (po tvojoj strukturi)
+        Pc_bar = component.Pc      # bar 
         Pc = Pc_bar * BAR_TO_PA    # Pa
         
         omega = component.omega
@@ -179,36 +179,3 @@ class ViscosityClass:
         mu_Pa_s = max(mu_cP, 0.0) / 1000.0
         return mu_Pa_s
 
-
-
-""" # Pretpostavimo da već imaš iz svog solvera:
-# V, x_liq, y_vap, method, iters, Zl, Zv = RachfordRice.solve(...)
-
-
-
-# VISKOZNOSTI – varijanta 1 (Chung CSP, “gas-like”):
-mu_v_chung = viscosity_chung_csp(components, T, P, y_vap, Z=Zv, phase="vapor")
-# (za liquid će dati donju procjenu; za tekućine koristi LBC ispod)
-
-# VISKOZNOSTI – varijanta 2 (LBC/JST – radi i za gas i za liquid):
-mu_v_lbc = viscosity_lbc(components, T, P, y_vap, Z=Zv)  # gas
-mu_l_lbc = viscosity_lbc(components, T, P, x_liq, Z=Zl)  # liquid """
-
-
-
-# 1. `density_from_Z(...)` – gustoća faze iz Z (kg/m³).
-# 2. `viscosity_chung_csp(...)` – **Chung CSP** (dilute-gas + acentrični faktor) za CO₂/N₂ mješavine; dobar za plin/“gas-like” uvjete, često ok i blizu kritike uz dobru gustoću.
-# 3. `viscosity_lbc(...)` – **Lohrenz–Bray–Clark (LBC/JST)** mješovita korelacija koja koristi **reduciranu molarnu koncentraciju** i **pseudo-kritične** (Kay) miks-vrijednosti. Radi i za **plin** i za **tekućinu** (često se blago “tjunira” na podatke).
-
-# > Jedinice: **SI** (T\[K], P\[Pa], μ\[Pa·s], ρ\[kg/m³]). U kodu su kritične veličine za CO₂ i N₂, i LJ parametri za Chapman/Chung dio.
-# > Za LBC sam implementirao standardnu **JST** formu i Kay mix-pravila; kad imaš lab PVT, obično se fino dotjeruju $V_c$ teških frakcija / $a_i$ koeficijenti. Formula i konstante su kao u sažecima iz literature (a₁…a₅) ([Wikipedia][1]); pregled i praktične napomene o LBC tuningu kod Whitsona ([Whitson][2]). Chungov gas-like izraz i kolizijski integral Ω\* prema Neufeldu su dani sažeto ovdje (T\* definicija, Fc korekcija) ([Wikipedia][1]).
-
-
-
-# * **Za CO₂/N₂** plin: `viscosity_chung_csp` je vrlo solidan; LBC često daje gotovo iste brojeve za “gas-like” regiju.
-# * **Za tekućinu** (kondenzat): koristi `viscosity_lbc`, i ako imaš mjerne μ, **tjuniraj** $[a_1..a_5]$ i/ili kritične volumene (posebno C7+ u naftama) – to je industrijski standard i preporuka (Whitson) ([Whitson][2]).
-# * U LBC-u je ključna **reducirana koncentracija** $c_r = c \, V_{c,\text{mix}}$ i **Kay** za $T_c, P_c, V_c$ te miješanje $\bar M$. JST polinom (a₁…a₅) je standardni, vidi sažetak i miks-pravila (u izvorniku je dana i $\eta_{0}$ i $D_p$) ([Wikipedia][1]).
-# * Ako želiš, mogu dodati “prekidač” koji automatski bira `Chung` za faze s $\rho < 120~\mathrm{kg/m^3}$ i `LBC` inače, ili uvezati **tuning** koeficijenata prema tvojim PVT tablicama (brzi least-squares).
-
-# [1]: https://en.wikipedia.org/wiki/Viscosity_models_for_mixtures "Viscosity models for mixtures - Wikipedia"
-# [2]: https://whitson.com/2020/01/20/lbc-viscosity-correlation-for-gas-condensate-reservoirs/ "LBC Viscosity Correlation for Gas Condensate Reservoirs - Whitson"
