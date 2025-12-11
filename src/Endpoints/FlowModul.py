@@ -16,7 +16,7 @@ def calculate_steps(steps: int, length: int, d_in: float, e: float, p: float, tK
     ################################### case handling #################################
     check_case(case)
     
-    df_lookup = None
+    data = None
     
     if case.upper() == 'CO2':
        case = CASES.CO2
