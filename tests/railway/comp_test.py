@@ -12,27 +12,23 @@ url2 = (
 mass_flow = 10  # kg/s
 full_report = 1 # - 1: full, 2: compact, real gass, 3: real gass results
 
-# molar fractions CO2, O2, N2, Ar, H2O, NO, SO2, SO3, CO, H2S 
+# molar fractions CO2,   O2,    N2,    Ar,     H2O,    NO,     SO2,    SO3,      CO,     H2S 
 data = {
     "fractions": [0.85, 0.0469, 0.058, 0.0447, 0.0001, 0.0001, 0.00005, 0.00005, 0.00005, 0.00005],   # molni udjeli smjese
     "T1": 300.0,                      # K
     "P1": 1,                          # bar
     "P2": 10,                         # bar
     "mass_flow": mass_flow,           # kg/s
-    "isentropic_efficiency": 0.9,     # ηₛ
+    "isentropic_efficiency": 0.8,     # ηₛ
     "polytropic_efficiency": 0.9,     # ηₚ
     "NASA_9": "true",                 
     "full_report": full_report,
-    "polytropic_exponent": 1.1        # 1 = vrati puni report, 0 = sažetak
+    "polytropic_exponent": 1.25        
 }
 
-response = requests.post(url1, json=data)
+response = requests.post(url2, json=data)
 
 def print_compression_results(results: dict) -> None:
-    """
-    Lijepo formatirani ispis rezultata za adijabatsku i politropsku kompresiju.
-    Očekuje rječnik strukture poput 'adiabatic_real' / 'polytropic_real' iz tvog primjera.
-    """
 
     def print_state(header: str, state: dict) -> None:
         p = state["p"]
@@ -110,21 +106,8 @@ def print_compression_results(results: dict) -> None:
 
 
 def print_full_compression_results(res_all: dict) -> None:
-    """
-    Lijep ispis rezultata iz odgovora API-ja, s jasnim razdvajanjem:
-      - TERMODINAMIČKI MODEL (idealni plin / realni plin PR EOS)
-      - STROJ (korekcija preko izentropskog / politropskog stupnja)
-
-    Struktura res_all:
-      res_all["ideal"]["adiabatic_ideal"]      -> T2s, T2, h1, h2s, h2, w_s, w_actual, P_s_MW, P_MW, p_ratio
-      res_all["ideal"]["polytropic_ideal"]     -> T2, h1, h2, w, P_MW, p_ratio
-
-      res_all["real"]["adiabatic_ideal"]       -> state1, state2s, state2, w_s, w_actual, P_s_MW, P_MW, p_ratio, eta_s
-      res_all["real"]["polytropic_ideal"]      -> state1, state2, w, P_MW, p_ratio, eta_p, n_steps
-    """
 
     def perc_diff(a, b):
-        """Relativna razlika b u odnosu na a, u %."""
         return (b - a) / a * 100.0 if a != 0 else float("nan")
 
     # ==========================
@@ -137,7 +120,6 @@ def print_full_compression_results(res_all: dict) -> None:
     real_ad    = res_all["real"]["adiabatic_real"]
     real_poly  = res_all["real"]["polytropic_real"]
 
-    # Realni adijabatski slučaj ima kompletna stanja -> koristimo ih za p1, p2, T1
     st1_r   = real_ad["state1"]
     st2s_r  = real_ad["state2s"]
     st2_r   = real_ad["state2"]
@@ -149,7 +131,7 @@ def print_full_compression_results(res_all: dict) -> None:
     p2 = st2_r["p"]
     T1 = st1_r["T"]
 
-    # Efektivna izentropska učinkovitost iz idealnog i realnog (samo info)
+
     eta_s_ideal = ideal_ad["w_s"] / ideal_ad["w_actual"] if ideal_ad["w_actual"] != 0 else float("nan")
     eta_s_real  = real_ad["w_s"]  / real_ad["w_actual"]  if real_ad["w_actual"]  != 0 else float("nan")
     polytropic_exponent = ideal_poly["n"]
@@ -159,7 +141,7 @@ def print_full_compression_results(res_all: dict) -> None:
     # ==========================
 
     print("\n====================================================")
-    print(" ADIJABATSKA KOMPRESIJA – IDEALNI PLIN")
+    print(" ADIJABATSKA KOMPRESIJA - IDEALNI PLIN")
     print("====================================================")
     print(f"Ulazni tlak p1:                 {p1:.3f} bar")
     print(f"Izlazni tlak p2:                {p2:.3f} bar")
@@ -168,20 +150,19 @@ def print_full_compression_results(res_all: dict) -> None:
     print(f"Ulazna temperatura T1:          {T1:.2f} K ({T1 - 273.15:.2f} °C)\n")
 
     # --- A) TERMODINAMIČKI MODEL – idealni plin (η_s = 1.0) ---
-    print("  [A] TERMODINAMIČKI MODEL – idealni plin (izentropski, η_s = 1.0)")
+    print("  1. MODEL  idealni plin (izentropski, η_s = 1.0)")
     print(f"      Izentropska izlazna T2s:  {ideal_ad['T2s']:.2f} K ({ideal_ad['T2s'] - 273.15:.2f} °C)")
-    print("      Entalpije (h = cp·T, referentna nula proizvoljna):")
+    print("      Entalpije (h = cp·T):")
     print(f"        h1  (ulaz, idealno):    {ideal_ad['h1']:.3f} kJ/kg")
     print(f"        h2s (izentropski):      {ideal_ad['h2s']:.3f} kJ/kg")
     print(f"      Specifični rad idealnog izentropskog procesa:")
-    print(f"        w_s,ideal (iz h2s - h1): {ideal_ad['w_s']:.3f} kJ/kg")
+    print(f"        w_s,ideal : {ideal_ad['w_s']:.3f} kJ/kg")
     print(f"      Snaga idealnog izentropskog procesa:")
     print(f"        P_s,ideal:              {ideal_ad['P_s_MW']:.4f} MW\n")
 
     # --- B) STROJ – korekcija na zadani izentropski stupanj (realni stroj, idealni model plina) ---
-    print("  [B] STROJ – učinak izentropske učinkovitosti na idealni model plina")
-    print("      (ovdje je TERMODINAMIKA još uvijek idealni plin,")
-    print("       ali uvažava se realnost KOMESORA preko zadane η_s)\n")
+    print("  2. Izentropska učinkovitosti na idealni model plina")
+    print("       zadani η_s)\n")
 
     print(f"      Zadana/efektivna izentropska učinkovitost η_s: {eta_s_ideal:.3f}")
     print(f"      'Stvarna' izlazna temperatura T2 (iz η_s):      {ideal_ad['T2']:.2f} K ({ideal_ad['T2'] - 273.15:.2f} °C)")
@@ -199,7 +180,7 @@ def print_full_compression_results(res_all: dict) -> None:
     # ==========================
 
     print("====================================================")
-    print(" ADIJABATSKA KOMPRESIJA – REALNI PLIN (PR EOS)")
+    print(" ADIJABATSKA KOMPRESIJA - REALNI PLIN (PR EOS)")
     print("====================================================")
     print(f"Ulazni tlak p1:                 {st1_r['p']:.3f} bar")
     print(f"Izlazni tlak p2:                {st2_r['p']:.3f} bar")
@@ -208,7 +189,7 @@ def print_full_compression_results(res_all: dict) -> None:
     print(f"Ulazna temperatura T1:          {st1_r['T']:.2f} K ({st1_r['T'] - 273.15:.2f} °C)\n")
 
     # --- C) TERMODINAMIČKI MODEL – realni plin (EOS, η_s = 1.0) ---
-    print("  [C] TERMODINAMIČKI MODEL – realni plin (PR EOS, izentropski, η_s = 1.0)")
+    print("  3. Realni plin (PR EOS, izentropski, η_s = 1.0)")
     print(f"      Izentropska izlazna T2s:  {st2s_r['T']:.2f} K ({st2s_r['T'] - 273.15:.2f} °C)")
     print("      Entalpije realnog plina (apsolutna razina proizvoljna):")
     print(f"        h1,real  (ulaz):        {st1_r['h']:.3f} kJ/kg")
@@ -219,14 +200,14 @@ def print_full_compression_results(res_all: dict) -> None:
     print(f"        P_s,real:               {real_ad['P_s_MW']:.4f} MW\n")
 
     # --- D) STROJ – učinak η_s na realni plin ---
-    print("  [D] STROJ – učinak izentropske učinkovitosti na realni plin (PR EOS)")
+    print("  4 Učinak izentropske učinkovitosti na realni plin (PR EOS)")
     print(f"      Zadani izentropski stupanj kompresora η_s: {real_ad.get('eta_s', eta_s_real):.3f}")
     print(f"      Stvarna izlazna T2,real (EOS + η_s):       {st2_r['T']:.2f} K ({st2_r['T'] - 273.15:.2f} °C)")
     print("      Entalpija stvarnog izlaza (realni plin + η_s):")
     print(f"        h2,stroj,real:          {st2_r['h']:.3f} kJ/kg")
-    print("      Specifični rad realnog stroja (na temelju realnog plina):")
+    print("      Specifični rad realni (na temelju realnog plina):")
     print(f"        w_actual,real:          {real_ad['w_actual']:.3f} kJ/kg")
-    print("      Snaga realnog stroja (na temelju realnog plina):")
+    print("      Snaga PR realni plin:")
     print(f"        P_actual,real:          {real_ad['P_MW']:.4f} MW")
     print(f"      Maseni protok ṁ:         {mass_flow:.3f} kg/s")
     print("====================================================\n")
@@ -237,7 +218,7 @@ def print_full_compression_results(res_all: dict) -> None:
     # ==========================
 
     print("====================================================")
-    print(" POLITROPSKA KOMPRESIJA – IDEALNI PLIN")
+    print(" POLITROPSKA KOMPRESIJA - IDEALNI PLIN")
     print("====================================================")
     print(f"Ulazni tlak p1:                 {st1_pr['p']:.3f} bar")
     print(f"Izlazni tlak p2:                {st2_pr['p']:.3f} bar")
@@ -245,9 +226,7 @@ def print_full_compression_results(res_all: dict) -> None:
 
     # Napomena: ovdje je već uračunata zadana politropska učinkovitost η_p (iz ulaza)
     eta_p = real_poly.get("eta_p", float("nan"))
-    print("  [E] TERMODINAMIČKO–STROJNI MODEL – idealni plin + zadani η_p")
-    print("      (kod politropske kompresije već imamo miješano: ")
-    print("       termodinamika idealnog plina + učinkovitost procesa η_p)\n")
+    print("  5. STROJNI MODEL - idealni plin + eksponent")
 
     print(f"      Polytropic exponent (zadan): {polytropic_exponent:.3f}")
     print(f"      Ulazna temperatura T1:                 {st1_pr['T']:.2f} K ({st1_pr['T'] - 273.15:.2f} °C)")
@@ -268,13 +247,13 @@ def print_full_compression_results(res_all: dict) -> None:
     # ==========================
 
     print("====================================================")
-    print(" POLITROPSKA KOMPRESIJA – REALNI PLIN (PR EOS)")
+    print(" POLITROPSKA KOMPRESIJA - REALNI PLIN (PR EOS)")
     print("====================================================")
     print(f"Ulazni tlak p1:                 {st1_pr['p']:.3f} bar")
     print(f"Izlazni tlak p2:                {st2_pr['p']:.3f} bar")
     print(f"Omjer tlakova p2/p1:            {real_poly['p_ratio']:.3f} [-]\n")
 
-    print("  [F] TERMODINAMIČKO–STROJNI MODEL – realni plin (PR EOS) + zadani η_p")
+    print("  6. TERMODINAMIČKO STROJNI MODEL - realni plin (PR EOS) + zadani η_p")
     print("      (opet miješano: EOS za plin, ali proces je politropski sa zadanom η_p)\n")
 
     print(f"      Politropska učinkovitost η_p (zadana): {real_poly['eta_p']:.3f}")
@@ -295,8 +274,8 @@ def print_full_compression_results(res_all: dict) -> None:
 
 
     # Kratka usporedba adijabatske kompresije – strojevi (idealni model vs realni model plina)
-    print("******** USPOREDBA STROJA – ADIJABATSKA, IDEALNI MODEL vs REALNI MODEL ********")
-    print(" (ovdje uspoređujemo samo učinak stroja – w_actual i P – za dva različita")
+    print("******** USPOREDBA STROJA - ADIJABATSKA teoretska, IDEALNI MODEL vs REALNI MODEL ********")
+    print(" (ovdje uspoređujemo samo učinak stroja - w_actual i P - za dva različita")
     print("  termodinamička modela plina: idealni plin vs. realni plin PR EOS)\n")
     print(f"  w_actual (idealni plin): {ideal_ad['w_actual']:.3f} kJ/kg")
     print(f"  w_actual (realni plin):  {real_ad['w_actual']:.3f} kJ/kg  "
@@ -307,8 +286,7 @@ def print_full_compression_results(res_all: dict) -> None:
     print("*********************************************************************\n")
 
     # Kratka usporedba politropske kompresije – idealni vs realni model plina
-    print("******** USPOREDBA – POLITROPSKA, IDEALNI vs REALNI MODEL PLINA ********")
-    print(" (ovdje su u oba slučaja uključeni i proces (η_p) i stroj, ali se razlikuje")
+    print("******** USPOREDBA - POLITROPSKA, IDEALNI vs REALNI MODEL PLINA ********")
     print("  TERMODINAMIČKI model plina: idealni plin vs realni plin PR EOS)\n")
     print(f"  w,ideal: {ideal_poly['w']:.3f} kJ/kg")
     print(f"  w,real : {real_poly['w']:.3f} kJ/kg  "
