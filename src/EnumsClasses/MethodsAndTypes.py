@@ -16,8 +16,11 @@ class Phase(str, Enum):
 
 class CASES(str, Enum):
     CASE1 = "CASE1"
-    PVT = "PVT"
+    #PVT = "PVT"
     CO2 = "CO2"
+    OXY1 = "OXY1"
+    OXY2 = "OXY2"
+    OXY3 = "OXY3"
 
 class CONSTANTS(float, Enum):
     R = 8.314462618

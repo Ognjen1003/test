@@ -64,8 +64,7 @@ async def calculate_EOS(input_data: EOSInputModel, request: Request):
             T_K=input_data.T,
             P_bar=input_data.P,
             eos_type=input_data.eos_type,
-            method=input_data.method,
-            calculate_enthalpy=input_data.calculate_enthalpy
+            method=input_data.method
         )
 
         return result
@@ -138,228 +137,186 @@ async def error_route(request: Request):
 async def root():
     return """
     <html>
-        <body>
-            <h2>Flow calculation (/calculate_flow)</h2>
+      <body style="font-family: Arial, sans-serif; line-height: 1.4;">
+        <h2>Flow loop web servis - API dokumentacija</h2>
+        <p>Servis izlaže tri POST endpointa:</p>
+        <ul>
+          <li><code>/calculate_flow</code> - hidraulički proračun (pad tlaka po koracima)</li>
+          <li><code>/eos_calc</code> - EOS/flash proračun (V, x, y, Z-faktori)</li>
+          <li><code>/compressor_calc</code> - termodinamika kompresora (ideal/real, adijabatski/politropski)</li>
+        </ul>
 
-            <p>Pošalji POST zahtjev na <code>/calculate_flow</code> sa sljedećim JSON-om:</p>
+        <hr/>
 
-            <pre>
-            {
-                "nsteps": 2,           # broj koraka diskretizacije
-                "L": 40000,            # duljina cjevovoda (m)
-                "d_in": 0.315925,      # unutarnji promjer (m)
-                "e": 0.0001,           # hrapavost cijevi
-                "p": 4000000,          # početni tlak (Pa)
-                "T": 293.15,           # početna temperatura (K)
-                "qm": 23.75,           # maseni protok (kg/m^3)
-                "case": "CASE1",       # CASE1, CO2 ili PVT
-                "composition": [],     # samo za case="PVT" (lista kompozicije / podataka)
-                "visual": 0            # 0 = JSON, 1 = HTML tablica
-            }
-            </pre>
+        <h3>1) Flow calculation (<code>/calculate_flow</code>)</h3>
+        <p>Računa pad tlaka po diskretiziranim koracima koristeći Darcy-Weisbach uz faktor trenja iz Colebrook-White.</p>
 
-            <p><strong>Napomena:</strong></p>
-            <ul>
-                <li><code>case = "CASE1"</code> – koristi lookup tablicu za case1.</li>
-                <li><code>case = "CO2"</code> – pretpostavke za čisti CO₂.</li>
-                <li><code>case = "PVT"</code> – koristi dostavljeni <code>composition</code> kao izvor podataka.</li>
-            </ul>
+        <h4>Request (JSON)</h4>
+        <pre style="background:#f6f6f6;padding:12px;border-radius:8px;">
+{
+  "nsteps": 1,
+  "L": 40000,
+  "d_in": 0.315925,
+  "e": 0.0001,
+  "p": 4000000,
+  "T": 293.15,
+  "qm": 23.75,
+  "case": "OXY3",
+  "visual": 0
+}
+        </pre>
 
-            <p><strong>Primjer poziva:</strong></p>
+        <p><strong>Opis polja (sažeto):</strong></p>
+        <ul>
+          <li><code>nsteps</code> - broj diskretnih koraka (npr. 1…50)</li>
+          <li><code>L</code> [m] - duljina cjevovoda</li>
+          <li><code>d_in</code> [m] - unutarnji promjer</li>
+          <li><code>e</code> [m] - hrapavost cijevi</li>
+          <li><code>p</code> [Pa] - ulazni tlak</li>
+          <li><code>T</code> [K] - ulazna temperatura</li>
+          <li><code>qm</code> [kg/s] - maseni protok</li>
+          <li><code>case</code> - <code>CO2</code>, <code>CASE1</code>, <code>OXY1</code>, <code>OXY2</code>, <code>OXY3</code></li>
+          <li><code>visual</code> - 0: JSON, 1: HTML tablica</li>
+        </ul>
 
-            <pre>
-            POST /calculate_flow
-            {
-                "nsteps": 2,
-                "L": 40000,
-                "d_in": 0.315925,
-                "e": 0.0001,
-                "p": 4000000,
-                "T": 293.15,
-                "qm": 23.75,
-                "case": "CASE1",
-                "visual": 0
-            }
-            </pre>
+        <p><strong>Napomena:</strong> odgovor trenutno vraća <code>result</code> kao JSON-string ili HTML tablicu.</p>
 
-            <p>Povratna vrijednost za <code>"visual": 0</code> je JSON s ključem <code>"result"</code> koji sadrži niz zapisa po koracima (ili JSON string, ovisno o implementaciji):</p>
+        <h4>Response (primjer - cca, stvarni rezultat)</h4>
+        <pre style="background:#f6f6f6;padding:12px;border-radius:8px;">
+{
+  "result": [
+    {
+      "step": 1.0,
+      "L": 40000.0,
+      "p1": 40.0,
+      "t": 20.0,
+      "mu": 8.106801262939821e-06,
+      "rho_g": 91.74428392217587,
+      "u": 3.3023775937632505,
+      "Re": 11807017.636280673,
+      "ff": 0.015173228688780701,
+      "dp": 9.610732251173848,
+      "p2": 30.38926774882615
+    }
+  ]
+}
+        </pre>
 
-            <pre>
-            {
-                "result":
-                    [
-                        {
-                            "step": 1,
-                            "L": 40000.0,
-                            "p1": 40.0,
-                            "t": 20.0,
-                            "mu": 1.66573821741095e-05,
-                            "rho_g": 92.8530388477516,
-                            "u": 3.2629440171282442,
-                            "Re": 5746229.778777943,
-                            "ff": 0.015240188214917173,
-                            "dp": 9.537876591534586,
-                            "p2": 30.462123408465413
-                        }
-                    ]
-            }
-            </pre>
+        <p><em>Izlaz:</em> <code>dp</code> je pad tlaka [bar], <code>p1</code>/<code>p2</code> su tlakovi [bar], <code>t</code> je temperatura [°C].</p>
 
-            <hr/>
+        <hr/>
 
-            <h3>EOS Calculation (/eos_calc)</h3>
+        <h3>2) EOS / flash proračun (<code>/eos_calc</code>)</h3>
+        <p>Flash proračun smjese korištenjem Peng-Robinson (PR) ili SRK jednadžbe stanja. Vraća udio pare (V), fazne sastave (x,y) i Z-faktore.</p>
 
-            <p>Za EOS račun, pošalji POST na <code>/eos_calc</code> sa sljedećim JSON-om:</p>
+        <h4>Request (JSON - primjer)</h4>
+        <p>Svaka komponenta ide kao objekt <code>{"Cmp": {...}}</code>. NASA-9 polja su opcionalna, ali se koriste za idealna svojstva u <code>Component</code> i real-gas termodinamici (npr. residual h u PR).</p>
 
-            <pre>
-            {
-                "components": [
-                    {
-                        "Cmp": {
-                            "name": "Methane",
-                            "Tc": 190.6,
-                            "Pc": 4599000,
-                            "omega": 0.011,
-                            "A": 8.07131,
-                            "B": 1730.63,
-                            "C": 233.426
-                        }
-                    },
-                    {
-                        "Cmp": {
-                            "name": "Ethane",
-                            "Tc": 305.4,
-                            "Pc": 4872000,
-                            "omega": 0.099,
-                            "A": 8.21201,
-                            "B": 1652.57,
-                            "C": 229.387
-                        }
-                    }
-                ],
-                "T": 300,                    # temperatura (K)
-                "P": 5e6,                    # tlak (Pa)
-                "eos_type": "SRK",           # "PR" ili "SRK"
-                "method": "FSOLVE",          # metoda rješavanja (npr. FSOLVE)
-                "calculate_enthalpy": false  # ako je implementirano u modelu
-            }
-            </pre>
+        <pre style="background:#f6f6f6;padding:12px;border-radius:8px;">
+{
+  "components": [
+    { "Cmp": { "name": "CO2", "formula": "CO2", "Mw": 44.01, "Tc": 304.7, "Pc": 73.866, "omega": 0.225, "fraction": 0.85,
+               "nasa_mid": 1000.0, "nasa_low": [ ...9... ], "nasa_high": [ ...9... ] } },
+    { "Cmp": { "name": "O2",  "formula": "O2",  "Mw": 32.0,  "Tc": 154.6, "Pc": 50.43,  "omega": 0.0222,"fraction": 0.0469,
+               "nasa_mid": 1000.0, "nasa_low": [ ...9... ], "nasa_high": [ ...9... ] } }
+    // ...
+  ],
+  "T": 245.15,
+  "P": 40.0,
+  "eos_type": "PR",
+  "method": "FSOLVE"
+}
+        </pre>
 
-            <p><strong>Primjer:</strong></p>
+        <h4>Response (primjer - cca, stvarni rezultat)</h4>
+        <pre style="background:#f6f6f6;padding:12px;border-radius:8px;">
+{
+  "V": 0.17858923988745115,
+  "x": [0.9336537899, 0.0241024354, 0.0192631432, 0.0226127973, 0.0001215454,
+        0.0000488753, 0.0000603434, 0.0000607323, 0.0000180098, 0.0000583279],
+  "y": [0.4652392876, 0.1517560644, 0.2361679063, 0.1462887964, 0.0000009031,
+        0.0003351451, 0.0000024259, 0.0000006375, 0.0001971371, 0.0000116965],
+  "method": "FSOLVE",
+  "iteration": 8,
+  "Zl": 0.07987173641093182,
+  "Zv": 0.8000073759944746
+}
+        </pre>
 
-            <pre>
-            POST /eos_calc
-            {
-                "components": [
-                    {
-                        "Cmp": {
-                            "name": "Methane",
-                            "Tc": 190.6,
-                            "Pc": 4599000,
-                            "omega": 0.011,
-                            "A": 8.07131,
-                            "B": 1730.63,
-                            "C": 233.426
-                        }
-                    },
-                    {
-                        "Cmp": {
-                            "name": "Ethane",
-                            "Tc": 305.4,
-                            "Pc": 4872000,
-                            "omega": 0.099,
-                            "A": 8.21201,
-                            "B": 1652.57,
-                            "C": 229.387
-                        }
-                    }
-                ],
-                "T": 300,
-                "P": 5e6,
-                "eos_type": "PR",
-                "method": "FSOLVE",
-                "calculate_enthalpy": false
-            }
-            </pre>
+        <p><em>Napomena:</em> <code>V</code> ~ 0.18 znači oko 18% pare i 82% tekuće faze; <code>x</code>/<code>y</code> su sastavi tekuće/parne faze; <code>Zl</code>/<code>Zv</code> su kompresibilnosti faza.</p>
+        <p><em>Napomena:</em> Frakcije moraju biti normalizirane.</p>
+        <hr/>
 
-            <p>Tipičan odgovor:</p>
+        <h3>3) Compressor / thermodynamics (<code>/compressor_calc</code>)</h3>
+        <p>Računa adijabatsku i politropsku kompresiju oxyfuel smjese uz zadane učinkovitosti. Podržava “full report” i sažeti izlaz.</p>
 
-            <pre>
-            {
-                "V": 0.5,              # udjel pare (vapor fraction)
-                "x": [0.50, 0.50],     # sastav tekuće faze
-                "y": [0.50, 0.50],     # sastav plinske faze
-                "method": "FSOLVE",    # korištena metoda
-                "iteration": 7,        # broj iteracija
-                "Zl": 0.82,            # kompresibilnost tekućine
-                "Zv": 0.95             # kompresibilnost plina
-            }
-            </pre>
+        <h4>Request (JSON - primjer)</h4>
+        <pre style="background:#f6f6f6;padding:12px;border-radius:8px;">
+{
+  "fractions": [0.85, 0.0469, 0.058, 0.0447, 0.0001, 0.0001, 0.00005, 0.00005, 0.00005, 0.00005],
+  "T1": 300.0,
+  "P1": 1.0,
+  "P2": 10.0,
+  "mass_flow": 10.0,
+  "isentropic_efficiency": 0.8,
+  "polytropic_efficiency": 0.9,
+  "NASA_9": "true",
+  "full_report": 1,
+  "polytropic_exponent": 1.25
+}
+        </pre>
 
-            <hr/>
+        <p><strong>Važno:</strong> <code>fractions</code> mora imati isti broj elemenata i isti redoslijed kao interna lista komponenti: <code>CO2, O2, N2, Ar, H2O, NO, SO2, SO3, CO, H2S </code>.</p>
 
-            <h3>Compressor / Thermodynamics (/compressor_calc)</h3>
+        <h4>Response (primjeri - cca)</h4>
 
-            <p>Za termodinamički proračun kompresora pošalji POST na <code>/compressor_calc</code> sa sljedećim JSON-om:</p>
+        <p><strong>A) <code>full_report = 2</code> (sažeti string):</strong></p>
+        <pre style="background:#f6f6f6;padding:12px;border-radius:8px;">
+"Adiabatic P: ~X.XXX MW, W: ~YYY.YYY kJ/kg | Polytropic P: ~X.XXX MW, W: ~YYY.YYY kJ/kg"
+        </pre>
 
-            <pre>
-            {
-                "fractions": [          # molne frakcije smjese (mora ih biti koliko ima komponenti u gass_data)
-                    0.85,               #CO2
-                    0.0469,             #O2
-                    0.058,              #N2
-                    0.0447,             #Ar
-                    0.0001,             #H2O
-                    0.0001,             #NO
-                    0.00005,            #SO2
-                    0.00005,            #SO3
-                    0.00005,            #CO
-                    0.00005             #H2S
-                ],
-                "P1": 100000,                  # ulazni tlak (Pa)
-                "P2": 500000,                  # izlazni tlak (Pa)
-                "T1": 293.15,                  # ulazna temperatura (K)
-                "mass_flow": 10.0,             # maseni protok (kg/s)
-                "isentropic_efficiency": 0.8,  # izentropski stupanj djelovanja
-                "polytropic_efficiency": 0.85, # polytropski stupanj djelovanja
-                "polytropic_exponent": 1.3,    # polytropski eksponent (n)
-                "full_report": 1               # 0, 1 ili 2
-            }
-            </pre>
+        <p><strong>B) <code>full_report = 0</code> (real-gas dict - skraćeno):</strong></p>
+        <pre style="background:#f6f6f6;padding:12px;border-radius:8px;">
+{
+  "adiabatic_real": {
+    "p_ratio": 10.0,
+    "eta_s": 0.8,
+    "w_s": "... kJ/kg",
+    "w_actual": "... kJ/kg",
+    "P_s_MW": "... MW",
+    "P_MW": "... MW",
+    "state1": { "p": 1.0,  "T": 300.0, "h": "...", "s": "...", "v": "...", "z": [ ... ] },
+    "state2s":{ "p": 10.0, "T": "...", "h": "...", "s": "...", "v": "...", "z": [ ... ] },
+    "state2": { "p": 10.0, "T": "...", "h": "...", "s": "...", "v": "...", "z": [ ... ] }
+  },
+  "polytropic_real": {
+    "p_ratio": 10.0,
+    "eta_p": 0.9,
+    "n_steps": "...",
+    "w": "... kJ/kg",
+    "P_MW": "... MW",
+    "state1": { ... },
+    "state2": { ... }
+  }
+}
+        </pre>
 
-            <p><strong>full_report:</strong></p>
-            <ul>
-                <li><code>0</code> ili bilo koja druga vrijednost osim 1 i 2 – vraća puni rječnik s realnim plinom (ključevi poput <code>"adiabatic_real"</code>, <code>"polytropic_real"</code> itd.).</li>
-                <li><code>1</code> – vraća rječnik sa:
-                    <ul>
-                        <li><code>"ideal"</code> – rezultati idealnog plina (iz <code>calc_ideal_gas_sanity_check</code>)</li>
-                        <li><code>"real"</code> – rezultati realnog plina (iz <code>calc_real_gas_thermo</code>)</li>
-                    </ul>
-                </li>
-                <li><code>2</code> – vraća kratki string sažetak snaga i specifičnog rada.</li>
-            </ul>
+        <p><strong>C) <code>full_report = 1</code> (ideal + real):</strong></p>
+        <pre style="background:#f6f6f6;padding:12px;border-radius:8px;">
+{
+  "ideal": { "adiabatic_ideal": { ... }, "polytropic_ideal": { ... } },
+  "real":  { "adiabatic_real":  { ... }, "polytropic_real":  { ... } }
+}
+        </pre>
 
-            <p><strong>Primjer odgovora za <code>full_report = 2</code>:</strong></p>
+        <hr/>
 
-            <pre>
-            "Adiabatic P: 5.123 MW, W: 180.345 kJ/kg | Polytropic P: 4.987 MW, W: 175.210 kJ/kg"
-            </pre>
+        <h3>Općenito - greške</h3>
+        <ul>
+          <li>HTTP 400 - neispravan ulaz (npr. krivi <code>case</code>, kriva duljina <code>fractions</code>, zbroj udjela ≠ 1.0, itd.)</li>
+          <li>HTTP 500 - neočekivana greška u izvođenju (numerički problem ili bug)</li>
+        </ul>
 
-            <p><strong>Primjer odgovora za <code>full_report = 1</code> (skraćeno):</p>
-
-            <pre>
-            {
-                "ideal": {
-                    "adiabatic_ideal": { ... },
-                    "polytropic_ideal": { ... }
-                },
-                "real": {
-                    "adiabatic_real": { ... },
-                    "polytropic_real": { ... }
-                }
-            }
-            </pre>
-
-        </body>
+      </body>
     </html>
     """

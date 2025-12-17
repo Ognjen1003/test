@@ -48,7 +48,7 @@ start_time = time.time()
 if cplusplus:
     temp_list = temperatures.tolist()
     press_list = pressures.tolist()
-    cpp_components = UtilClass.convert_to_cpp_components(components)
+    cpp_components = Util.convert_to_cpp_components(components)
     cpp_results = eos_cpp.mainFromPython(cpp_components, temp_list, press_list)
 
     for res in cpp_results:

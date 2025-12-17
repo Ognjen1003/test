@@ -103,8 +103,10 @@ class Flow:
                 # Pure CO2 logic (from dp_table_pure)
                 rho = CP.PropsSI('D', 'T', T1, 'P', p1, 'CO2')
                 mu = CP.PropsSI('V', 'T', T1, 'P', p1, 'CO2')
-            elif case == MT.CASES.PVT:
+            elif case == MT.CASES.OXY1 or case == MT.CASES.OXY2 or case == MT.CASES.OXY3:
                 composition = datasource
+                if datasource is None:
+                    raise ValueError("Composition can't be empty for OXY alike cases")
                 p_bar = p1/100000
                 rho = self.get_rho(p1, T1, composition, p_bar)
                 mu = self.get_viscosity(composition, T1, rho)
@@ -135,7 +137,7 @@ class Flow:
         Zv = result["Zv"]
         Zl = result["Zl"]
 
-        actual_phase = Util.get_phase(V)
+        actual_phase = Util.Util.get_phase(V)
 
         if actual_phase == MT.Phase.LIQUID:                     
             rho = D.DensityClass.density_from_Z(composition, T1, p1, Zl)

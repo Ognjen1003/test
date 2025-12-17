@@ -3,13 +3,13 @@ from src.Models.Component import Component
 from src.Classes.EOS import RachfordRice, PengRobinsonEOS, SRKEOS 
 from src.EnumsClasses import SolveMethod, EOSType
 from src.Classes.UtilClass import Util
-import datetime
+import datetime 
 import numpy as np
 from typing import List
 import math
 
 def perform_eos_calculation(components: List[Component], T_K: float, P_bar: float, eos_type: EOSType, 
-                            method: SolveMethod = SolveMethod.FSOLVE, phase_detect: bool = False, calculate_enthalpy: bool = False, BIC: np.ndarray | None = None ) -> dict:
+                            method: SolveMethod = SolveMethod.FSOLVE, phase_detect: bool = False, BIC: np.ndarray | None = None ) -> dict:
     
     #TIMEFORMAT = "%H:%M:%S"
     #print(f'\n start {datetime.datetime.now().strftime(TIMEFORMAT)}')

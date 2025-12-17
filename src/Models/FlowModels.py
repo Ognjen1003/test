@@ -9,5 +9,5 @@ class FlowInputModel(BaseModel):
     p: Optional[float] = 4000000
     T: Optional[float] = 293.15
     qm: Optional[float] = 23.75
-    case: Optional[str] = "case1",
+    case: Optional[str] = "case1"
     visual: Optional[int] = 0

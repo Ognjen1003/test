@@ -15,7 +15,7 @@ class Component(BaseModel):
     # NASA 7-coefficient polynomials
     nasa_low: list[float] | None = None    # [a1..a7]
     nasa_high: list[float] | None = None   # [a1..a7]
-    nasa_mid: float | None = None             # granica low→high (najčešće 1000 K)
+    nasa_mid: float | None = None          # granica low→high (najčešće 1000 K)
 
     def _get_nasa9_coeffs(self, T: float):
         """
@@ -32,11 +32,6 @@ class Component(BaseModel):
             a1, a2, a3, a4, a5, a6, a7, b1, b2 = self.nasa_high
         return a1, a2, a3, a4, a5, a6, a7, b1, b2
 
-    # ----------------------------------------------------------
-    #  cp°(T) – idealni plin, NASA-9
-    #  Koristimo tvoju jednadžbu:
-    #  C_p T / R = a1 T^-2 + a2 T^-1 + a3 + a4 T + a5 T^2 + a6 T^3 + a7 T^4
-    # ----------------------------------------------------------
     def cp_ideal_molar(self, T: float) -> float:
         """
         cp°(T) po MOLU [kJ/(kmol·K)] prema NASA-9.
@@ -62,10 +57,6 @@ class Component(BaseModel):
         """
         return self.cp_ideal_molar(T) / self.Mw
 
-    # ----------------------------------------------------------
-    #  h°(T) – idealni plin, NASA-9
-    #  Ho(T)/RT = –a1T–2 + a2lnT/T + a3 + a4T/2 + a5T2/3 + a6T3/4 + a7T4/5 + b1/T
-    # ----------------------------------------------------------
     def h_ideal_molar(self, T: float) -> float:
         """
         h°(T) po MOLU [kJ/kmol] prema NASA-9.
@@ -91,11 +82,6 @@ class Component(BaseModel):
         """
         return self.h_ideal_molar(T) / self.Mw
 
-    # ----------------------------------------------------------
-    #  s°(T,p) – idealni plin, NASA-9
-    #  So(T)/R = –a1T–2/2 – a2T–1 + a3lnT + a4T + a5T2/2 + a6T3/3 + a7T4/4 + b2
-    #  (log(p/p_ref) dio ubacujemo ručno)
-    # ----------------------------------------------------------
     def s_ideal_molar(self, T: float, p: float, pref: float = 1e5) -> float:
         """
         s°(T,p) po MOLU [kJ/(kmol·K)] prema NASA-9.
@@ -113,7 +99,6 @@ class Component(BaseModel):
             + b2
         )
 
-        # idealni plin → dodatni -ln(p/p_ref) u s/R
         s_over_R = s_over_R_T - math.log(p / pref)
         return s_over_R * MT.CONSTANTS.R  # kJ/(kmol·K)
 

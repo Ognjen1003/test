@@ -1,9 +1,9 @@
 import requests
 import datetime
-from data.testData import ComponentData
 
-url = "http://127.0.0.1:8000/calculate_flow"
-#url = "https://test-production-f873.up.railway.app/calculate_flow"
+
+url1 = "http://127.0.0.1:8000/calculate_flow"
+url2 = "https://electroacoustic-junctional-perry.ngrok-free.dev/calculate_flow"
 
 
 begin = datetime.datetime.now()
@@ -16,11 +16,11 @@ input_data = {
     "p": 4000000,
     "T": 293.15,
     "qm": 23.75,
-    "case": "case1",   
+    "case": "oxy3",   
     "visual": 0
 }
 
-response = requests.post(url, json=input_data)
+response = requests.post(url1, json=input_data)
 
 if response.status_code == 200:
     #result = response.json()

@@ -16,4 +16,3 @@ class EOSInputModel(BaseModel):
     P: float
     eos_type: str  # "PR" or "SRK"
     method: SolveMethod
-    calculate_enthalpy: bool

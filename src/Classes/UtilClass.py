@@ -152,7 +152,7 @@ class Util:
     @staticmethod
     def _Vc_from_TcPcZc(Tc: np.ndarray, Pc: np.ndarray, Zc: np.ndarray) -> np.ndarray:
         """Kritični molarni volumen iz Tc,Pc,Zc: Vc = Zc R Tc / Pc  [m^3/mol]."""
-        return Zc * EnumsClasses.MethodsAndTypes.CONSTANTS.R * Tc / Pc
+        return Zc * MT.CONSTANTS.R * Tc / Pc
 
     def is_near_critical(Zl: float, Zv: float, tol: float = 1e-6) -> bool:
 
@@ -163,6 +163,7 @@ class Util:
             return False
         return abs(Zv - Zl) < tol
 
+    @staticmethod
     def get_phase(phase: float) -> MT.Phase:
 
         if phase == -2 or phase == -3 or phase == 2 or phase == -10:                        #tekuce
