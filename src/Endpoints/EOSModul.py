@@ -1,15 +1,15 @@
-import src.Classes.UtilClass as Util
-import EnumsClasses.MethodsAndTypes as MT
-from Models.Component import Component
+import src.EnumsClasses.MethodsAndTypes as MT
+from src.Models.Component import Component
 from src.Classes.EOS import RachfordRice, PengRobinsonEOS, SRKEOS 
 from src.EnumsClasses import SolveMethod, EOSType
-import datetime
+from src.Classes.UtilClass import Util
+import datetime 
 import numpy as np
 from typing import List
 import math
 
 def perform_eos_calculation(components: List[Component], T_K: float, P_bar: float, eos_type: EOSType, 
-                            method: SolveMethod = SolveMethod.FSOLVE, phase_detect: bool = False, calculate_enthalpy: bool = False, BIC: np.ndarray | None = None ) -> dict:
+                            method: SolveMethod = SolveMethod.FSOLVE, phase_detect: bool = False, BIC: np.ndarray | None = None ) -> dict:
     
     #TIMEFORMAT = "%H:%M:%S"
     #print(f'\n start {datetime.datetime.now().strftime(TIMEFORMAT)}')

@@ -1,8 +1,8 @@
 import numpy as np
 from typing import Sequence
-import EnumsClasses.MethodsAndTypes as MT
+import src.EnumsClasses.MethodsAndTypes as MT
 import src.Classes.UtilClass as Util
-from Models.Component import Component
+from src.Models.Component import Component
 
 class DensityClass:
 
@@ -15,10 +15,10 @@ class DensityClass:
         if Z <= 0:
             raise ValueError("Z mora biti > 0 u fizički smislenom rješenju.")
 
-        x = Util._normalize(np.array([getattr(c, "fraction", 0.0) for c in components], dtype=float))
+        x = Util.Util._normalize(np.array([getattr(c, "fraction", 0.0) for c in components], dtype=float))
 
         # molarna masa smjese (kg/mol)
-        M = Util._mw_array_kg_per_mol(components)
+        M = Util.Util._mw_array_kg_per_mol(components)
         Mbar = float(np.dot(x, M))
 
         if v_shift is None:

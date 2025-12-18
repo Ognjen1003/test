@@ -1,4 +1,4 @@
-from Models.Component import Component
+from src.Models.Component import Component
 from typing import List
 import math
 import numpy as np

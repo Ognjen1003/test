@@ -1,14 +1,11 @@
 from src.Endpoints.EOSModul import perform_eos_calculation
-from Models.Component import Component
-from src.Classes import UtilClass
+from src.Classes.UtilClass import Util
 from data.testData import ComponentData
 from data.testDataBIC import ComponentDataBIC
 import src.EnumsClasses.MethodsAndTypes as MT
 import pandas as pd
 import numpy as np
-import time
-import sys
-import os
+import time, sys, os
 
 bin_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'bin'))
 sys.path.insert(0, bin_path)  # stavim ga kao prvi prioritet
@@ -19,25 +16,28 @@ print("sys.path:", sys.path)
 import eos_cpp 
 
 #u bin imas pyd file, to je dll sa zvanje iz cpp
-cplusplus = False                   # python mora imati istu verziju kao i pyd file (313 npr -> 3.13)
+cplusplus = False                   # python mora imati istu verziju kao i pyd file (313 npr -> 3.13), pazi da radi sa BIC, BIC True ne radi ovdje
 display_iterations = False          # samo iteracije nema veze sa negative flesh nuzno
 adjust_display_iterations = False   # prikazuje u razlicitm bojama nizi broj iteracija, bitno i za negativan flash
-toggle_phase_detect = False         # umjesto V pare daje sifru izlaza iz Rachford-Rice, isklucivo sa display_iterations
-is_BIC_used = True                  # provjeri koju matricu uopce upotrebljavas
+toggle_phase_detect = False         # umjesto V pare daje sifru izlaza iz Rachford-Rice, sa display_iterations, ostalo zgasi
+is_BIC_used = False                  # provjeri koju matricu uopce upotrebljavas
 
 
 # funkcije da izgleda urednije
 title_primer = "oxyfuel_comp1"  # za prikaz vise, nije elementarno
 components = ComponentData.oxyfuel_comp1 # podaci koji se actually prikazuju  
+
 if is_BIC_used:
-    BIC_coeff = ComponentDataBIC.data_oxyfuel_comp_1_2_3
+    BIC_coeff = ComponentDataBIC.order_oxyfuel_comp1_BIC
 else:
     BIC_coeff = None
 
-UtilClass.check_total_fraction(components, title_primer)
+Util.check_total_fraction(components, title_primer)
 
-temperatures = np.arange(250, 323, 1)  
-pressures = np.arange(1, 110, 1)      
+#data_nafta , wellstream etc, 250-540 K i 1-190 bara
+#oxyfuel itd 260-325 K i 1-100 bara
+temperatures = np.arange(230, 330, 1)  
+pressures = np.arange(10, 50, 1)      
 results = pd.DataFrame(index=pressures, columns=temperatures)
 resultsIteration = pd.DataFrame(index=pressures, columns=temperatures)
 if toggle_phase_detect:
@@ -48,7 +48,7 @@ start_time = time.time()
 if cplusplus:
     temp_list = temperatures.tolist()
     press_list = pressures.tolist()
-    cpp_components = UtilClass.convert_to_cpp_components(components)
+    cpp_components = Util.convert_to_cpp_components(components)
     cpp_results = eos_cpp.mainFromPython(cpp_components, temp_list, press_list)
 
     for res in cpp_results:
@@ -68,12 +68,14 @@ else:
                 toggle_phase_detect,
                 BIC= BIC_coeff
                 ) 
-            results.at[Pp, Tt] = result["V"]
+            results.at[Pp, Tt] = Vint = result["V"]
             resultsIteration.at[Pp, Tt] = result["iteration"]
+            # if Vint is not None and Vint != -1.0 and Vint != 0:
+            #     print(f"V: {Vint}") 
             
             if toggle_phase_detect:
                 V_num = result["V"]
-                phase = UtilClass.get_phase(V_num)
+                phase = Util.get_phase(V_num)
                 if phase == MT.Phase.LIQUID:
                     Vl = 1 
                     Vp = 0
@@ -105,7 +107,7 @@ if not display_iterations:
 else:
     results_display = resultsIteration.astype(int)
 
-UtilClass.display(temperatures, pressures, results_display, title_primer, adjust_display_iterations)
+Util.display(temperatures, pressures, results_display, title_primer, adjust_display_iterations)
 
 
 

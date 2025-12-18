@@ -1,5 +1,5 @@
-import EnumsClasses.MethodsAndTypes as MT
-from Models.Component import Component
+import src.EnumsClasses.MethodsAndTypes as MT
+from src.Models.Component import Component
 import math
 from typing import List, Tuple
 import numpy as np
@@ -54,21 +54,6 @@ class EOSBase:
         self.Zl = Z_liq
         self.Zv = Z_vap
         return Z_liq, Z_vap
-    
-    def alpha(self, comp: Component) -> float:
-        """ 
-        Placeholder method alpha correction
-        """
-        raise NotImplementedError
-
-    def a_formula(self, comp: Component) -> float:
-        raise NotImplementedError
-
-    def b_formula(self, comp: Component) -> float:
-        raise NotImplementedError
-
-    def get_coefficients(self, A: float, B: float) -> List[float]:
-        raise NotImplementedError
 
     def solve_cubic(self, coeffs: List[float]) -> List[float]:
         """
@@ -204,3 +189,67 @@ class EOSBase:
         B = b_mix * P / (R * T)
 
         return a_mix, b_mix, A, B
+
+    def cp_ideal(self, T: float) -> float:
+        # 1) cp smjese po molu
+        cp_molar = 0.0
+        for comp in self.components:
+            cp_molar += comp.fraction * comp.cp_ideal_molar(T)  # kJ/(kmol·K)
+
+        # 2) molna masa smjese
+        M_mix = self.mixture_molar_mass()  # kg/kmol
+
+        # 3) cp po masi
+        return cp_molar / M_mix  # kJ/(kg·K)
+
+    def h_ideal(self, T: float) -> float:
+        h_molar = 0.0
+        for comp in self.components:
+            h_molar += comp.fraction * comp.h_ideal_molar(T)  # kJ/kmol
+
+        M_mix = self.mixture_molar_mass()  # kg/kmol
+        return h_molar / M_mix  # kJ/kg
+
+    def s_ideal(self, T: float, p: float) -> float:
+        s_molar = 0.0
+        for comp in self.components:
+            s_molar += comp.fraction * comp.s_ideal_molar(T, p)  # kJ/(kmol·K)
+
+        M_mix = self.mixture_molar_mass()
+        return s_molar / M_mix  # kJ/(kg·K)
+
+    def h(self, p: float, T: float) -> float:
+        """
+        Ukupna entalpija = idealni + residual
+        """
+        return self.h_ideal(T) + self.h_residual(p, T)
+
+    def s(self, p: float, T: float) -> float:
+        """
+        Ukupna entropija = idealni + residual
+        """
+        return self.s_ideal(T, p) + self.s_residual(p, T)
+    
+    def mixture_molar_mass(self) -> float:
+        return sum(comp.fraction * comp.Mw for comp in self.components)
+
+    # abstract 
+
+    def alpha(self, comp: Component) -> float:
+        raise NotImplementedError
+
+    def a_formula(self, comp: Component) -> float:
+        raise NotImplementedError
+
+    def b_formula(self, comp: Component) -> float:
+        raise NotImplementedError
+
+    def get_coefficients(self, A: float, B: float) -> List[float]:
+        raise NotImplementedError
+    
+    def h_residual(self, p: float, T: float, z: List[float]) -> float:
+        raise NotImplementedError("EOS does not implement enthalpy departure!")
+
+    def s_residual(self, p: float, T: float, z: List[float]) -> float:
+        raise NotImplementedError("EOS does not implement entropy departure!")
+        

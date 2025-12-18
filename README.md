@@ -53,4 +53,24 @@ Setup za razvoj (mozda...)
             package_dir={"": "src"},
         )
 
+ngrok 
+url: https://electroacoustic-junctional-perry.ngrok-free.dev
+config: ngrok config check
+start: ngrok http 8000 
 
+config yaml: usual places, refer code sa ngrok.com
+    Linux: ~/.config/ngrok/ngrok.yml
+    MacOS (Darwin): ~/Library/Application Support/ngrok/ngrok.yml
+    Windows: "%HOMEPATH%\AppData\Local\ngrok\ngrok.yml"
+
+
+ngrok yaml
+version: "3"
+agent:
+    authtoken: 35ki1idE7L8dVZHJNkbFDTvtlbn_FYRjWdiDfVZy7Vrp6X4A
+    connect_url: connect.us.ngrok-agent.com:443
+
+tunnels:
+  myapp:
+    proto: http
+    addr: 8000

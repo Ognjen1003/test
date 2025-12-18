@@ -1,6 +1,7 @@
 from src.Classes.Flow.Flow import Flow 
 from src.Classes.Flow.LookupTableSingleton import LookupTableSingleton 
 from src.EnumsClasses.MethodsAndTypes import CASES
+from data.testData import ComponentData
 import warnings
 import datetime
 import sys
@@ -11,18 +12,26 @@ warnings.filterwarnings("ignore")
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 
 #P:pa T:K length:m qm kg/m3 d_in:m e:pipe roughness
-def calculate_steps(steps: int, length: int, d_in: float, e: float, p: float, tK: float, qm: float, case: str, composition: list) -> dict:
+def calculate_steps(steps: int, length: int, d_in: float, e: float, p: float, tK: float, qm: float, case: str) -> dict:
 
     ################################### case handling #################################
     check_case(case)
     
-    df_lookup = None
+    data = None
     
     if case.upper() == 'CO2':
        case = CASES.CO2
-    elif case.upper() == 'PVT':
-        case = CASES.PVT
-        data = composition
+    # elif case.upper() == 'PVT':
+    #     case = CASES.PVT
+    elif case.upper() == 'OXY1':
+            case = CASES.OXY1
+            data = ComponentData.oxyfuel_comp1
+    elif case.upper() == 'OXY2':
+            case = CASES.OXY2
+            data = ComponentData.oxyfuel_comp2
+    elif case.upper() == 'OXY3':
+            case = CASES.OXY3
+            data = ComponentData.oxyfuel_comp3
     elif case.upper() == 'CASE1':
         case = CASES.CASE1
         data = LookupTableSingleton.load_lookup_table("case1")
@@ -50,9 +59,9 @@ def calculate_steps(steps: int, length: int, d_in: float, e: float, p: float, tK
 
     #zbog ScriptManagera, promijenit u main.py kad tad    
     #return data_dict
-    return json.dumps(data_dict)
+    return data_dict
 
 def check_case(case: str):
-    valid_cases = ["CASE1", "PVT", "CO2"]
+    valid_cases = ["CASE1", "CO2", "OXY1", "OXY2", "OXY3"]
     if case.upper() not in valid_cases:
         raise ValueError(f"Invalid case: {case}. Must be one of {valid_cases}")
