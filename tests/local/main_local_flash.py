@@ -24,11 +24,11 @@ is_BIC_used = False                  # provjeri koju matricu uopce upotrebljavas
 
 
 # funkcije da izgleda urednije
-title_primer = "data_components"  # za prikaz vise, nije elementarno
-components = ComponentData.data_components # podaci koji se actually prikazuju  
+title_primer = "oxyfuel_comp1"  # za prikaz vise, nije elementarno
+components = ComponentData.oxyfuel_comp1 # podaci koji se actually prikazuju  
 
 if is_BIC_used:
-    BIC_coeff = ComponentDataBIC.grubisno
+    BIC_coeff = ComponentDataBIC.order_oxyfuel_comp1_BIC
 else:
     BIC_coeff = None
 
@@ -36,8 +36,8 @@ Util.check_total_fraction(components, title_primer)
 
 #data_nafta , wellstream etc, 250-540 K i 1-190 bara
 #oxyfuel itd 260-325 K i 1-100 bara
-temperatures = np.arange(190, 430, 1)  
-pressures = np.arange(1, 220, 1)      
+temperatures = np.arange(230, 330, 1)  
+pressures = np.arange(10, 50, 1)      
 results = pd.DataFrame(index=pressures, columns=temperatures)
 resultsIteration = pd.DataFrame(index=pressures, columns=temperatures)
 if toggle_phase_detect:

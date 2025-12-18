@@ -26,7 +26,7 @@ class Util:
             print(f"{label}: OK (sum = {total:.6f})")
         else:
             print(f"{label}: NOT OK (sum = {total:.6f})")
-            raise ValueError("fraction sum not 1.0")
+            raise ValueError(f"{label} - fraction sum not 1.0")
 
     @staticmethod
     def convert_to_cpp_components(py_components):

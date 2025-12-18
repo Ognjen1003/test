@@ -10,6 +10,7 @@ from src.Classes.Logging.LoggerSingleton import LoggerSingleton
 from typing import List
 from src.Models.Component import Component
 import pandas as pd
+from src.Classes.UtilClass import Util
 
 #import sys
 #import os
@@ -58,6 +59,8 @@ async def calculate_EOS(input_data: EOSInputModel, request: Request):
 
     try:
         components: List[Component] = [comp_input.Cmp for comp_input in input_data.components]
+
+        Util.check_total_fraction(components, "EOSModul composition")
 
         result = perform_eos_calculation(
             components=components,
