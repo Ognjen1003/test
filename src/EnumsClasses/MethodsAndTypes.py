@@ -35,3 +35,8 @@ class ViscosityMethod(str, Enum):
     WILKE = "WILKE"              # dilute-gas Wilke
     LBC = "LBC"                  # LBC/JST korekcija (gusti plin)
     AUTO = "AUTO"                # heuristika, mozda nepotrebno ali neka bude
+
+class KRef(str, Enum):
+    UPSTREAM = "UPSTREAM"
+    DOWNSTREAM = "DOWNSTREAM"
+    MIN_DIAMETER = "MIN_DIAMETER"

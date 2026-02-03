@@ -39,6 +39,9 @@ input_data2 = {
     "fittings": [
         {"at_m": 10000.0, "K": 0.9, "kind": "elbow"},
         {"at_m": 17000.0, "K": 1.2, "kind": "elbow"}
+        {"at_m": 21000, "K": 5.0, "kind": "valve"},
+        {"at_m": 24000, "K": 1.2, "d_in_new": 0.250, "kind": "contraction"},
+        {"at_m": 33000, "K": 0.3, "d_in_new": 0.315925, "kind": "expansion"}
     ],
 
     "viscosity_method": "AUTO"

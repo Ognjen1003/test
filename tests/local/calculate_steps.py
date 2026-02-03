@@ -29,7 +29,7 @@ input_a.step_mode = MT.StepMode.BY_FITTINGS      # nije bitno u ovom slučaju
 input_a.max_step_m = None                     # ne koristimo refinement
 input_a.virtual_steps = 8                     # <-- KLJUČNO: 8 segmenata
 
-result_a = calculate_steps2(
+""" result_a = calculate_steps2(
     length=input_a.L,
     d_in=input_a.d_in,
     e=input_a.e,
@@ -41,7 +41,7 @@ result_a = calculate_steps2(
     step_mode=input_a.step_mode,
     max_step_m=input_a.max_step_m,
     virtual_steps=input_a.virtual_steps,
-)
+) """
 
 
 input_b = base.model_copy(deep=True)
@@ -50,7 +50,11 @@ input_b.step_mode = MT.StepMode.BY_FITTINGS
 input_b.max_step_m = 5000                     # (za sad) bez refinementa
 input_b.fittings = [
     FittingK(at_m=10000.0, K=0.9, kind="elbow"),
-    FittingK(at_m=17000.0, K=1.2, kind="elbow")
+    FittingK(at_m=17000.0, K=1.2, kind="elbow"),
+    FittingK(at_m=19000.0, K=5.0, kind="valve"),
+    FittingK(at_m=20000.0, K=1.2, d_in_new=0.250, kind="contraction"),
+    FittingK(at_m=34000.0, K=0.3, d_in_new=0.315925, kind="expansion"),
+    FittingK(at_m=37000.0, K=0.3, d_in_new=0.325925, kind="expansion", K_ref="DOWNSTREAM")
 ]
 
 result_b = calculate_steps2(
