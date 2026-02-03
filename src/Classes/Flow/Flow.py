@@ -10,7 +10,7 @@ from scipy.optimize import fsolve
 from scipy.interpolate import griddata
 import CoolProp.CoolProp as CP
 from numba import jit
-import sys, os
+import sys, os, math
 
 
 
@@ -90,6 +90,86 @@ class Flow:
         return dp
 
     #@jit(forceobj=True)
+    def dp_table_combined2(self, L, d_in, e, p1, T1, qm, case, datasource=None, fittings=None, step_mode=MT.StepMode.BY_FITTINGS, 
+                                max_step_m=5000.0, virtual_steps=None, viscosity_method=None):
+        
+        breakpoints, K_at, meta = self.fitting_validator(
+            L=L,
+            fittings=fittings,
+            step_mode=step_mode,
+            max_step_m=max_step_m,
+            virtual_steps=virtual_steps
+        )
+
+        df_dp = pd.DataFrame(columns=['step', 'L', 'p1', 't', 'mu', 'rho_g', 'u', 'Re', 'ff','K_step', 
+                                          'dp_fric', 'dp_minor', 'dp_total', 'p2'])
+        A = 0.25*np.pi*d_in**2
+
+        if case == MT.CASES.CASE1:
+            points = datasource[['p', 't']].values
+
+        traveled = 0.0
+
+        for i in range(len(breakpoints) - 1):
+            seg_start = breakpoints[i]
+            seg_end = breakpoints[i + 1]
+            seg_len = seg_end - seg_start
+            traveled += seg_len
+
+
+            if case == MT.CASES.CO2:
+                # Pure CO2 logic (from dp_table_pure)
+                rho = CP.PropsSI('D', 'T', T1, 'P', p1, 'CO2')
+                mu = CP.PropsSI('V', 'T', T1, 'P', p1, 'CO2')
+            elif case == MT.CASES.OXY1 or case == MT.CASES.OXY2 or case == MT.CASES.OXY3:
+                composition = datasource
+                if datasource is None:
+                    raise ValueError("Composition can't be empty for OXY alike cases")
+                p_bar = p1/100000
+                rho = self.get_rho(p1, T1, composition, p_bar)
+                mu = self.get_viscosity(composition, T1, rho, viscosity_method)
+                
+            elif case == MT.CASES.CASE1:
+                # Standard lookup table logic (from dp_table)
+                rho = griddata(points, datasource['rho_g'].values, (p1 / 1e5, T1 - 273.15), method='linear')
+                mu = griddata(points, datasource['mu_g'].values, (p1 / 1e5, T1 - 273.15), method='linear')
+
+            # Common logic for al  cases
+            qv = qm / rho
+            u = qv / A
+            Re = self.Reynolds(rho, u, d_in, mu)
+            ff = self.f_Colebrook_White(d_in, Re, e)
+            dp_fric = self.p_Darcy_Weisbach(v=u, rho_g=rho, L=seg_len, f=ff, D=d_in)
+
+            # K je na kraju segmenta (fitting na toj lokaciji)
+            K_step = K_at.get(round(seg_end, 6), 0.0)
+            dp_minor = K_step * (rho * u * u / 2.0)
+
+            dp_total = dp_fric + dp_minor
+            p2 = p1 - dp_total
+
+            df_dp.loc[i] = [
+                i + 1,
+                traveled,
+                p1 / 1e5,
+                T1 - 273.15,
+                mu,
+                rho,
+                u,
+                Re,
+                ff,
+                K_step,
+                dp_fric / 1e5,
+                dp_minor / 1e5,
+                dp_total / 1e5,
+                p2 / 1e5
+            ]
+
+            p1 = p2
+
+        return df_dp, meta
+    
+    #@jit(forceobj=True)
     def dp_table_combined(self, L, d_in, e, p1, T1, qm, case, nsteps=10, datasource=None):
         
         df_dp = pd.DataFrame(columns=['step', 'L', 'p1', 't', 'mu', 'rho_g', 'u', 'Re', 'ff', 'dp', 'p2'])
@@ -152,7 +232,126 @@ class Flow:
         
         return rho
             
-    def get_viscosity(self, composition, T1, rho):
-        viscosity = V.ViscosityClass.gas_viscosity_wilke(composition, T1)
+    def get_viscosity(self, composition, T1, rho, viscosity_method = None):
+        if viscosity_method is None or viscosity_method is MT.ViscosityMethod.AUTO or viscosity_method is MT.ViscosityMethod.WILKE:
+            viscosity = V.ViscosityClass.gas_viscosity_wilke(composition, T1)
+        else: 
+            raise ValueError("Not implemented") 
         #viscosity = V.ViscosityClass.viscosity_lbc(composition, T1, rho)
         return viscosity
+
+    def fitting_validator(self, *, L: float, fittings: list | None, step_mode, max_step_m: float | None = None, virtual_steps: int | None = None):
+
+
+        if L is None or float(L) <= 0:
+            raise ValueError("L mora biti > 0")
+
+        L = float(L)
+
+        # ----------------------------
+        # 0) defaulti
+        # ----------------------------
+        if fittings is None:
+            fittings = []
+
+        # ----------------------------
+        # 1) “virtual steps” slučaj:
+        # ravna cijev, ali N koraka
+        # ----------------------------
+        if virtual_steps is not None:
+            if not isinstance(virtual_steps, int) or virtual_steps <= 0:
+                raise ValueError("virtual_steps mora biti pozitivan int")
+
+            # N koraka -> N segmenata -> N+1 točaka
+            step_len = L / virtual_steps
+            breakpoints = [i * step_len for i in range(0, virtual_steps + 1)]
+            breakpoints[-1] = L  # zbog floating errora
+            K_at = {}  # nema mikrogubitaka
+            return breakpoints, K_at, {
+                "mode": "VIRTUAL_STEPS",
+                "virtual_steps": virtual_steps,
+                "fittings_count": 0
+            }
+
+        # ----------------------------
+        # 2) očisti fittings -> (at_m, K)
+        # ----------------------------
+        clean = []
+        for f in fittings:
+            # podrška za FittingK objekt i dict
+            at_m = getattr(f, "at_m", None) if not isinstance(f, dict) else f.get("at_m", None)
+            Kval = getattr(f, "K", None)    if not isinstance(f, dict) else f.get("K", None)
+
+            if at_m is None or Kval is None:
+                raise ValueError("Fitting mora imati 'at_m' i 'K'")
+
+            at_m = float(at_m)
+            Kval = float(Kval)
+
+            if Kval <= 0:
+                raise ValueError(f"K mora biti > 0, dobio: {Kval}")
+
+            # nema koljena na 0 ili L 
+            if at_m <= 0.0 or at_m >= L:
+                raise ValueError(f"Fitting at_m mora biti u (0, L). Dobio: {at_m}, L={L}")
+
+            clean.append((at_m, Kval))
+
+        clean.sort(key=lambda x: x[0])
+
+        # ----------------------------
+        # 3) K_at
+        # ----------------------------
+        K_at = {}
+        for at_m, Kval in clean:
+            at_key = round(at_m, 6)
+            K_at[at_key] = K_at.get(at_key, 0.0) + Kval
+
+        fitting_points = sorted(K_at.keys())
+
+        # ----------------------------
+        # 4) generiranje breakpoints
+        # ----------------------------
+        if step_mode.name == "BY_FITTINGS":  # ili == StepMode.BY_FITTINGS
+            breakpoints = [0.0] + fitting_points + [L]
+
+            if max_step_m is not None and float(max_step_m) > 0:
+                refined = [0.0]
+                for a, b in zip(breakpoints[:-1], breakpoints[1:]):
+                    seg_len = b - a
+                    if seg_len <= max_step_m:
+                        refined.append(b)
+                    else:
+                        n = int(math.ceil(seg_len / max_step_m))
+                        dl = seg_len / n
+                        for k in range(1, n + 1):
+                            refined.append(a + k * dl)
+                refined[-1] = L
+                breakpoints = refined
+
+        else:
+            if max_step_m is None or float(max_step_m) <= 0:
+                raise ValueError("Za FIXED mode treba max_step_m > 0")
+
+            max_step_m = float(max_step_m)
+            n = int(math.ceil(L / max_step_m))
+            dl = L / n
+            breakpoints = [i * dl for i in range(n + 1)]
+            breakpoints[-1] = L
+
+        bp = []
+        for x in breakpoints:
+            x = float(x)
+            if not bp or abs(x - bp[-1]) > 1e-9:
+                bp.append(x)
+        breakpoints = bp
+
+        if breakpoints[0] != 0.0 or abs(breakpoints[-1] - L) > 1e-6:
+            raise ValueError("Breakpointovi nisu dobro generirani (ne počinju s 0 ili ne završavaju s L).")
+
+        return breakpoints, K_at, {
+            "mode": step_mode.value if hasattr(step_mode, "value") else str(step_mode),
+            "virtual_steps": None,
+            "fittings_count": len(clean),
+            "breakpoints_count": len(breakpoints)
+        }

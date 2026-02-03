@@ -25,3 +25,13 @@ class CASES(str, Enum):
 class CONSTANTS(float, Enum):
     R = 8.314462618
     NA = 6.02214076e23
+
+class StepMode(str, Enum):
+    FIXED = "FIXED"              # koraci jednake duljine (max_step_m)
+    BY_FITTINGS = "BY_FITTINGS"  # rezanje trase po lokacijama koljena
+
+
+class ViscosityMethod(str, Enum):
+    WILKE = "WILKE"              # dilute-gas Wilke
+    LBC = "LBC"                  # LBC/JST korekcija (gusti plin)
+    AUTO = "AUTO"                # heuristika, mozda nepotrebno ali neka bude

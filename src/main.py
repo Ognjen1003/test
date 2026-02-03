@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse, HTMLResponse
-from src.Endpoints.FlowModul import calculate_steps
+from src.Endpoints.FlowModul import calculate_steps, calculate_steps2
 from src.Endpoints.EOSModul import perform_eos_calculation
 from src.Endpoints.CompressorModul import compressor_thermodynamics
 from src.Models.FlowModels import FlowInputModel
@@ -16,7 +16,6 @@ from src.Classes.UtilClass import Util
 #import os
 #sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 LoggerSingleton()
-
 app = FastAPI()
 
 
@@ -49,6 +48,37 @@ async def calculate(input_data: FlowInputModel = None, request: Request = None):
     except Exception as e:
         LoggerSingleton().log_info(f"Exception: Received input data from {request.client.host}: {input_data}, error: {e}")
         raise HTTPException(status_code=400, detail=str("Exception: " + e.__str__()))
+
+
+# Flowmodel (NEW)
+@app.post("/calculate_flow2")
+async def calculate_flow2(input_data: FlowInputModel, request: Request):
+    LoggerSingleton().log_info(f"calculate_flow: Received input data from {request.client.host}: {input_data.model_dump()}")
+
+    try:
+        # 1) izračun (nova arhitektura)
+        result = calculate_steps2(length=input_data.L, d_in=input_data.d_in, e=input_data.e, p=input_data.p, tK=input_data.T,
+                qm=input_data.qm, case=input_data.case, step_mode=input_data.step_mode, fittings=input_data.fittings,
+                  max_step_m=input_data.max_step_m, virtual_steps=input_data.virtual_steps, viscosity_method=input_data.viscosity_method)
+
+        if input_data.visual == 0:
+            return {"result": result}
+
+        df = pd.DataFrame(result)  
+        return HTMLResponse(content=df.to_html(index=False))
+
+    except ValueError as e:
+        LoggerSingleton().log_info(
+            f"ValueError: Received input data from {request.client.host}: error: {e}"
+        )
+        raise HTTPException(status_code=400, detail=str(e))
+
+    except Exception as e:
+        LoggerSingleton().log_info(
+            f"Exception: Received input data from {request.client.host}: error: {e}"
+        )
+        raise HTTPException(status_code=500, detail=f"Exception calculate_flow: {e}")
+
 
 
 #EOS calc
