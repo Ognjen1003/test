@@ -1628,6 +1628,121 @@ class ComponentData:
         ]
     }
 
+    _data_lorena_grgic_7_1_tip1_benzen_toluen = {
+        "components": [
+            {
+                "name": "Benzen",
+                "formula": "C6H6",
+                "Mw": 78.1118,
+                "Tc": 562.16,
+                "Pc": 4.89,
+                "omega": 0.21084,
+                "fraction": 0.50
+            },
+            {
+                "name": "Toluen",
+                "formula": "C7H8",
+                "Mw": 92.13842,
+                "Tc": 591.75,
+                "Pc": 4.108,
+                "omega": 0.2657,
+                "fraction": 0.50
+            }
+        ]
+    }
+
+    _data_lorena_grgic_7_1_tip1_co2_metan = {
+        "components": [
+            {
+                "name": "Ugljikov dioksid",
+                "formula": "CO2",
+                "Mw": 44.0098,
+                "Tc": 304.13,
+                "Pc": 7.375,
+                "omega": 0.22394,
+                "fraction": 0.30
+            },
+            {
+                "name": "Metan",
+                "formula": "CH4",
+                "Mw": 16.0428,
+                "Tc": 190.56,
+                "Pc": 4.5992,
+                "omega": 0.01142,
+                "fraction": 0.70
+            }
+        ]
+    }
+
+    _data_lorena_grgic_7_1_tip1_co2_etan = {
+        "components": [
+            {
+                "name": "Ugljikov dioksid",
+                "formula": "CO2",
+                "Mw": 44.0098,
+                "Tc": 304.13,
+                "Pc": 7.375,
+                "omega": 0.22394,
+                "fraction": 0.40
+            },
+            {
+                "name": "Etan",
+                "formula": "C2H6",
+                "Mw": 30.06904,
+                "Tc": 305.32,
+                "Pc": 4.872,
+                "omega": 0.099,
+                "fraction": 0.60
+            }
+        ]
+    }
+
+    _data_lorena_grgic_7_1_tip5_etan_metan_30_70 = {
+        "components": [
+            {
+                "name": "Etan",
+                "formula": "C2H6",
+                "Mw": 30.06904,
+                "Tc": 305.32,
+                "Pc": 4.872,
+                "omega": 0.099,
+                "fraction": 0.30
+            },
+            {
+                "name": "Metan",
+                "formula": "CH4",
+                "Mw": 16.0428,
+                "Tc": 190.56,
+                "Pc": 4.5992,
+                "omega": 0.01142,
+                "fraction": 0.70
+            }
+        ]
+    }
+
+    _data_lorena_grgic_7_1_tip5_metan_etan_60_40 = {
+        "components": [
+            {
+                "name": "Metan",
+                "formula": "CH4",
+                "Mw": 16.0428,
+                "Tc": 190.56,
+                "Pc": 4.5992,
+                "omega": 0.01142,
+                "fraction": 0.60
+            },
+            {
+                "name": "Etan",
+                "formula": "C2H6",
+                "Mw": 30.06904,
+                "Tc": 305.32,
+                "Pc": 4.872,
+                "omega": 0.099,
+                "fraction": 0.40
+            }
+        ]
+    }
+
 
     gas_mixture_air: ClassVar[List[Component]] = [Component(**c) for c in _gas_mixture_air["components"]]
     data_components: ClassVar[List[Component]] = [Component(**c) for c in _data["components"]]
@@ -1644,3 +1759,9 @@ class ComponentData:
     Domagoj_3_ujutro: ClassVar[List[Component]] = [Component(**c) for c in _data_Domagoj_3_ujutro["components"]]
     data_zebanec2_study_2007: ClassVar[List[Component]] = [Component(**c) for c in _data_zebanec2_study_2007["components"]]
     grubisno_polje: ClassVar[List[Component]] = [Component(**c) for c in _grubisno_polje["components"]]
+
+    data_lorena_grgic_7_1_tip1_benzen_toluen: ClassVar[List[Component]] = [Component(**c) for c in _data_lorena_grgic_7_1_tip1_benzen_toluen["components"]]
+    data_lorena_grgic_7_1_tip1_co2_metan: ClassVar[List[Component]] = [Component(**c) for c in _data_lorena_grgic_7_1_tip1_co2_metan["components"]]
+    data_lorena_grgic_7_1_tip1_co2_etan: ClassVar[List[Component]] = [Component(**c) for c in _data_lorena_grgic_7_1_tip1_co2_etan["components"]]
+    data_lorena_grgic_7_1_tip5_etan_metan_30_70: ClassVar[List[Component]] = [Component(**c) for c in _data_lorena_grgic_7_1_tip5_etan_metan_30_70["components"]]
+    data_lorena_grgic_7_1_tip5_metan_etan_60_40: ClassVar[List[Component]] = [Component(**c) for c in _data_lorena_grgic_7_1_tip5_metan_etan_60_40["components"]]
