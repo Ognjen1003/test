@@ -25,6 +25,8 @@ adjust_display_iterations = False
 toggle_phase_detect = False
 is_BIC_used = False
 
+# prag: ispod ovog broja tocaka ne koristimo multiprocessing
+MULTIPROCESS_THRESHOLD_POINTS = 40 * 40
 
 title_primer = "oxyfuel_comp1"
 components = ComponentData.data_components
@@ -76,12 +78,49 @@ def solve_one_temperature(args):
     return row_results, excel_rows
 
 
+def fill_results(results, resultsIteration, excel_rep, row_results, excel_rows, toggle_phase_detect):
+    for Tt, Pp, Vval, iteration in row_results:
+        results.at[Pp, Tt] = Vval
+        resultsIteration.at[Pp, Tt] = iteration
+
+    if toggle_phase_detect and excel_rep is not None and excel_rows:
+        for row in excel_rows:
+            excel_rep.loc[len(excel_rep)] = row
+
+
+def run_sequential(temperatures, pressures, components, toggle_phase_detect, BIC_coeff,
+                   results, resultsIteration, excel_rep):
+    print("Single-process način rada.")
+
+    for Tt in temperatures:
+        row_results, excel_rows = solve_one_temperature(
+            (Tt, pressures, components, toggle_phase_detect, BIC_coeff)
+        )
+        fill_results(results, resultsIteration, excel_rep, row_results, excel_rows, toggle_phase_detect)
+
+
+def run_parallel(temperatures, pressures, components, toggle_phase_detect, BIC_coeff,
+                 results, resultsIteration, excel_rep):
+    print("Multiprocessing način rada.")
+
+    task_args = [
+        (Tt, pressures, components, toggle_phase_detect, BIC_coeff)
+        for Tt in temperatures
+    ]
+
+    max_workers = max(1, os.cpu_count() - 1)
+
+    with ProcessPoolExecutor(max_workers=max_workers) as executor:
+        for row_results, excel_rows in executor.map(solve_one_temperature, task_args):
+            fill_results(results, resultsIteration, excel_rep, row_results, excel_rows, toggle_phase_detect)
+
+
 def main():
     Util.check_total_fraction(components, title_primer)
 
     # data_nafta , wellstream etc, 250-540 K i 1-190 bara
-    temperatures = np.arange(230, 540, 1)
-    pressures = np.arange(1, 190, 1)
+    temperatures = np.arange(230, 540, 10)
+    pressures = np.arange(1, 190, 10)
 
     results = pd.DataFrame(index=pressures, columns=temperatures)
     resultsIteration = pd.DataFrame(index=pressures, columns=temperatures)
@@ -105,22 +144,19 @@ def main():
                 resultsIteration.at[res.P, res.T] = res.iterations
 
     else:
-        task_args = [
-            (Tt, pressures, components, toggle_phase_detect, BIC_coeff)
-            for Tt in temperatures
-        ]
+        total_points = len(temperatures) * len(pressures)
+        print(f"Ukupno točaka: {total_points}")
 
-        max_workers = max(1, os.cpu_count() - 1)
-
-        with ProcessPoolExecutor(max_workers=max_workers) as executor:
-            for row_results, excel_rows in executor.map(solve_one_temperature, task_args):
-                for Tt, Pp, Vval, iteration in row_results:
-                    results.at[Pp, Tt] = Vval
-                    resultsIteration.at[Pp, Tt] = iteration
-
-                if toggle_phase_detect and excel_rows:
-                    for row in excel_rows:
-                        excel_rep.loc[len(excel_rep)] = row
+        if total_points < MULTIPROCESS_THRESHOLD_POINTS:
+            run_sequential(
+                temperatures, pressures, components, toggle_phase_detect, BIC_coeff,
+                results, resultsIteration, excel_rep
+            )
+        else:
+            run_parallel(
+                temperatures, pressures, components, toggle_phase_detect, BIC_coeff,
+                results, resultsIteration, excel_rep
+            )
 
     end_time = time.time()
     elapsed_time = end_time - start_time
@@ -139,4 +175,5 @@ def main():
 
 if __name__ == "__main__":
     mp.freeze_support()
+    print(f"Matica {MULTIPROCESS_THRESHOLD_POINTS}")
     main()
