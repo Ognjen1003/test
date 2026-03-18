@@ -24,7 +24,7 @@ is_BIC_used = False                  # provjeri koju matricu uopce upotrebljavas
 
 
 # funkcije da izgleda urednije
-title_primer = "data_lorena_grgic_7_1_tip1_co2_etan"  # za prikaz vise, nije elementarno
+title_primer = "_data_lorena_grgic_7_1_tip5_etan_metan_30_70"  # za prikaz vise, nije elementarno
 components = ComponentData.data_lorena_grgic_7_1_tip5_etan_metan_30_70 # podaci koji se actually prikazuju  
 
 if is_BIC_used:
@@ -36,8 +36,8 @@ Util.check_total_fraction(components, title_primer)
 
 #data_nafta , wellstream etc, 250-540 K i 1-190 bara
 #oxyfuel itd 260-325 K i 1-100 bara
-temperatures = np.arange(230, 540, 1)  
-pressures = np.arange(1, 190, 1)      
+temperatures = np.arange(210, 280, 1)  
+pressures = np.arange(1, 90, 1)      
 results = pd.DataFrame(index=pressures, columns=temperatures)
 resultsIteration = pd.DataFrame(index=pressures, columns=temperatures)
 if toggle_phase_detect:
